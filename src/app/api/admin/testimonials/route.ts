@@ -16,12 +16,24 @@ const Body = z.object({
 });
 
 async function getHandler() {
-  if (!isDbConfigured || !db) return NextResponse.json({ items: [] });
-  const items = await db
-    .select()
-    .from(testimonials)
-    .orderBy(asc(testimonials.sortOrder), asc(testimonials.id));
-  return NextResponse.json({ items });
+  if (!isDbConfigured || !db) {
+    return NextResponse.json(
+      { error: "Database not configured." },
+      { status: 503 },
+    );
+  }
+  try {
+    const items = await db
+      .select()
+      .from(testimonials)
+      .orderBy(asc(testimonials.sortOrder), asc(testimonials.id));
+    return NextResponse.json({ items });
+  } catch (err) {
+    return NextResponse.json(
+      { error: `DB query failed: ${err instanceof Error ? err.message : String(err)}` },
+      { status: 500 },
+    );
+  }
 }
 
 async function postHandler(req: Request) {

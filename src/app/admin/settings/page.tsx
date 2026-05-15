@@ -15,11 +15,21 @@ export default function SettingsAdmin() {
 
   async function load() {
     setLoading(true);
-    const res = await fetch("/api/admin/settings", { cache: "no-store" });
-    const json = await res.json();
-    setData(json.data || {});
-    setRaw(JSON.stringify(json.data || {}, null, 2));
-    setLoading(false);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/settings", { cache: "no-store" });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`API ${res.status}: ${text.slice(0, 240)}`);
+      }
+      const json = await res.json();
+      setData(json.data || {});
+      setRaw(JSON.stringify(json.data || {}, null, 2));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -82,6 +92,16 @@ export default function SettingsAdmin() {
   }
 
   if (loading) return <p className="text-sm text-neutral-500">Loading…</p>;
+
+  if (error && !data) {
+    return (
+      <div className="rounded border border-red-300 bg-red-50 p-4 text-sm text-red-700">
+        <p className="font-medium">Failed to load settings</p>
+        <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-xs">{error}</pre>
+        <button onClick={load} className="mt-3 rounded border border-red-300 bg-white px-3 py-1 text-xs">Retry</button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

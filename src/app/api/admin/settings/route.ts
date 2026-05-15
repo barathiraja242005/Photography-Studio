@@ -7,15 +7,25 @@ import { revalidateSiteData } from "@/lib/get-site-data";
 
 async function getHandler() {
   if (!isDbConfigured || !db) {
-    return NextResponse.json({ data: null }, { status: 200 });
+    return NextResponse.json(
+      { error: "Database not configured." },
+      { status: 503 },
+    );
   }
-  const rows = await db
-    .select()
-    .from(siteSettings)
-    .orderBy(desc(siteSettings.id))
-    .limit(1);
-  const data = rows[0] ? JSON.parse(rows[0].data) : null;
-  return NextResponse.json({ data });
+  try {
+    const rows = await db
+      .select()
+      .from(siteSettings)
+      .orderBy(desc(siteSettings.id))
+      .limit(1);
+    const data = rows[0] ? JSON.parse(rows[0].data) : null;
+    return NextResponse.json({ data });
+  } catch (err) {
+    return NextResponse.json(
+      { error: `DB query failed: ${err instanceof Error ? err.message : String(err)}` },
+      { status: 500 },
+    );
+  }
 }
 
 async function putHandler(req: Request) {

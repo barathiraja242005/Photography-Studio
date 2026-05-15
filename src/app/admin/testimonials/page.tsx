@@ -26,13 +26,24 @@ export default function TestimonialsAdmin() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Item | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
-    const res = await fetch("/api/admin/testimonials", { cache: "no-store" });
-    const json = await res.json();
-    setItems(json.items ?? []);
-    setLoading(false);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/testimonials", { cache: "no-store" });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`API ${res.status}: ${text.slice(0, 240)}`);
+      }
+      const json = await res.json();
+      setItems(json.items ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -81,6 +92,13 @@ export default function TestimonialsAdmin() {
         </button>
       </header>
 
+      {error && (
+        <div className="mb-4 rounded border border-red-300 bg-red-50 p-4 text-sm text-red-700">
+          <p className="font-medium">Failed to load testimonials</p>
+          <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-xs">{error}</pre>
+          <button onClick={load} className="mt-3 rounded border border-red-300 bg-white px-3 py-1 text-xs">Retry</button>
+        </div>
+      )}
       {loading ? (
         <p className="text-sm text-neutral-500">Loading…</p>
       ) : (
