@@ -38,15 +38,49 @@ const STATUS = {
 export default function Contact() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+    setError(null);
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    // Helpful email subject line
+    formData.set(
+      "_subject",
+      `New inquiry · ${formData.get("name") || "—"} & ${formData.get("partner") || "—"}`
+    );
+
+    try {
+      const res = await fetch(
+        `https://formspree.io/f/${site.formspree.contact}`,
+        {
+          method: "POST",
+          body: formData,
+          headers: { Accept: "application/json" },
+        }
+      );
+
+      if (res.ok) {
+        setSent(true);
+        form.reset();
+        setSelectedDate(null);
+      } else {
+        const json = await res.json().catch(() => ({}));
+        setError(
+          json?.errors?.[0]?.message ||
+            json?.error ||
+            "Couldn't send right now. Please try again, or email us directly."
+        );
+      }
+    } catch {
+      setError("Network error. Please check your connection and try again.");
+    } finally {
       setLoading(false);
-      setSent(true);
-    }, 1200);
+    }
   };
 
   return (
@@ -314,6 +348,21 @@ export default function Contact() {
                         />
                       </div>
 
+                      {/* Error banner — visible when submission fails */}
+                      <AnimatePresence>
+                        {error && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -6, height: 0 }}
+                            animate={{ opacity: 1, y: 0, height: "auto" }}
+                            exit={{ opacity: 0, y: -6, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="overflow-hidden rounded-md border border-ruby/40 bg-ruby/10 px-4 py-3 text-[0.7rem] text-ruby-deep"
+                          >
+                            ⚠ {error}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
                       {/* Submit row */}
                       <div className="flex flex-col items-center gap-5 pt-2 sm:flex-row sm:justify-between">
                         <p className="text-[0.55rem] uppercase tracking-[0.26em] text-muted">
@@ -332,7 +381,7 @@ export default function Contact() {
                             strokeWidth={0}
                           />
                           <span className="relative">
-                            {loading ? "Sealing…" : "Send the invitation"}
+                            {loading ? "Sending…" : "Send the invitation"}
                           </span>
                         </motion.button>
                       </div>
@@ -591,16 +640,42 @@ import { ArrowUp, Globe, Newspaper } from "lucide-react";
 function Newsletter() {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!email.trim() || busy) return;
+    setBusy(true);
+    try {
+      const res = await fetch(
+        `https://formspree.io/f/${site.formspree.newsletter}`,
+        {
+          method: "POST",
+          body: new URLSearchParams({
+            email,
+            _subject: "Newsletter signup",
+          }),
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+      if (res.ok) {
+        setDone(true);
+        setEmail("");
+        setTimeout(() => setDone(false), 4000);
+      }
+    } catch {
+      // silent fail; newsletter is non-critical
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (email.trim()) {
-          setDone(true);
-          setEmail("");
-          setTimeout(() => setDone(false), 3000);
-        }
-      }}
+      onSubmit={handleSubmit}
       className="relative flex items-stretch overflow-hidden rounded-full border border-line bg-paper transition-all duration-500 focus-within:border-plum focus-within:shadow-[0_15px_35px_-15px_rgba(107,36,84,0.4)]"
     >
       {/* Mail icon in its own padded column — vertical-centered */}
@@ -619,10 +694,13 @@ function Newsletter() {
 
       <button
         type="submit"
-        className="group inline-flex shrink-0 items-center justify-center gap-2 bg-plum px-5 text-[0.6rem] uppercase tracking-[0.28em] text-bg transition-colors duration-300 hover:bg-plum-deep"
+        disabled={busy || done}
+        className="group inline-flex shrink-0 items-center justify-center gap-2 bg-plum px-5 text-[0.6rem] uppercase tracking-[0.28em] text-bg transition-colors duration-300 hover:bg-plum-deep disabled:opacity-70"
       >
         {done ? (
           <span className="flex items-center gap-1.5">Sent <span aria-hidden>✓</span></span>
+        ) : busy ? (
+          <span>Sending…</span>
         ) : (
           <>
             Subscribe

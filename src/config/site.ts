@@ -84,6 +84,25 @@ export const site = {
   },
 
   // ─────────────────────────────────────────────────────────────
+  // FORM DELIVERY — Formspree IDs
+  // Sign up at https://formspree.io, create a form, paste the ID below.
+  // The ID is the bit after /f/ in your endpoint URL.
+  // Example endpoint:  https://formspree.io/f/xyzabcd1
+  //                                          ─────────
+  //                                          this is the ID
+  // Better: put these in .env.local as NEXT_PUBLIC_FORMSPREE_CONTACT_ID,
+  // NEXT_PUBLIC_FORMSPREE_NEWSLETTER_ID — see .env.local.example.
+  // ─────────────────────────────────────────────────────────────
+  formspree: {
+    contact:
+      process.env.NEXT_PUBLIC_FORMSPREE_CONTACT_ID ||
+      "YOUR_FORMSPREE_CONTACT_ID",
+    newsletter:
+      process.env.NEXT_PUBLIC_FORMSPREE_NEWSLETTER_ID ||
+      "YOUR_FORMSPREE_NEWSLETTER_ID",
+  },
+
+  // ─────────────────────────────────────────────────────────────
   // SEO / METADATA
   // ─────────────────────────────────────────────────────────────
   seo: {
