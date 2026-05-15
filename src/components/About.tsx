@@ -523,7 +523,7 @@ const STATS = [
     sub: "Since the studio's first wedding · 2012",
     color: "plum",
     photo:
-      "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=1400&q=80",
+      "/images/pre-wedding/window-light.jpg",
   },
   {
     chapter: "ii.",
@@ -535,7 +535,7 @@ const STATS = [
     sub: "Across India and abroad · every season",
     color: "jade",
     photo:
-      "https://images.unsplash.com/photo-1604017011826-d3b4c23f8914?auto=format&fit=crop&w=1400&q=80",
+      "/images/wedding/couple-at-mandap.jpg",
   },
   {
     chapter: "iii.",
@@ -547,7 +547,7 @@ const STATS = [
     sub: "Jaipur · Udaipur · Coorg · Goa · and onward",
     color: "terracotta",
     photo:
-      "https://images.unsplash.com/photo-1632340904083-7308c4ea7e2d?auto=format&fit=crop&w=1400&q=80",
+      "/images/baraat/horseback.jpg",
   },
 ] as const;
 
@@ -829,31 +829,31 @@ const FRAMES = [
     year: "2012",
     label: "Founded in Mumbai",
     photo:
-      "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=900&q=80",
+      "/images/pre-wedding/window-light.jpg",
   },
   {
     year: "2016",
     label: "First destination wedding",
     photo:
-      "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?auto=format&fit=crop&w=900&q=80",
+      "/images/pre-wedding/golden-hour.jpg",
   },
   {
     year: "2019",
     label: "Featured — Vogue India",
     photo:
-      "https://images.unsplash.com/photo-1654764746225-e63f5e90facd?auto=format&fit=crop&w=900&q=80",
+      "/images/wedding/bridal-portrait.jpg",
   },
   {
     year: "2022",
     label: "100th wedding",
     photo:
-      "https://images.unsplash.com/photo-1604017011826-d3b4c23f8914?auto=format&fit=crop&w=900&q=80",
+      "/images/wedding/couple-at-mandap.jpg",
   },
   {
     year: "2025",
     label: "340+ couples · 27 cities",
     photo:
-      "https://images.unsplash.com/photo-1715347240072-69c73b0ba3ab?auto=format&fit=crop&w=900&q=80",
+      "/images/baraat/elephant.jpg",
   },
 ];
 
@@ -1569,7 +1569,7 @@ function EditorialVariant() {
         >
           <div className="relative aspect-[4/5] overflow-hidden bg-bg-soft shadow-[0_40px_90px_-40px_rgba(31,15,41,0.4)]">
             <Image
-              src="https://images.unsplash.com/photo-1681717166573-f71589207785?auto=format&fit=crop&w=1600&q=80"
+              src="/images/haldi/turmeric-splash.jpg"
               alt="Origin"
               fill
               sizes="(min-width: 1024px) 60vw, 100vw"
@@ -1668,7 +1668,7 @@ function EditorialVariant() {
         >
           <div className="relative aspect-[4/5] overflow-hidden bg-bg-soft shadow-[0_40px_90px_-40px_rgba(31,15,41,0.4)]">
             <Image
-              src="https://images.unsplash.com/photo-1604017011826-d3b4c23f8914?auto=format&fit=crop&w=1600&q=80"
+              src="/images/wedding/couple-at-mandap.jpg"
               alt="Method"
               fill
               sizes="(min-width: 1024px) 60vw, 100vw"
@@ -1689,7 +1689,7 @@ function EditorialVariant() {
       >
         <div className="relative h-[60vh] min-h-[420px] w-full overflow-hidden">
           <Image
-            src="https://images.unsplash.com/photo-1654764746225-e63f5e90facd?auto=format&fit=crop&w=2400&q=80"
+            src="/images/wedding/bridal-portrait.jpg"
             alt="Pull-quote"
             fill
             sizes="100vw"
@@ -1944,19 +1944,19 @@ function CinematicVariant() {
   return (
     <div className="relative">
       <CinematicScene
-        src="https://images.unsplash.com/photo-1681717166573-f71589207785?auto=format&fit=crop&w=2400&q=80"
+        src="/images/haldi/turmeric-splash.jpg"
         eyebrow="01 — Our Story"
         title="We don't pose moments. We honour them."
         body="A S Photography was born from a simple obsession — Indian weddings deserve a way of looking that matches their generosity."
       />
       <CinematicScene
-        src="https://images.unsplash.com/photo-1604017011826-d3b4c23f8914?auto=format&fit=crop&w=2400&q=80"
+        src="/images/wedding/couple-at-mandap.jpg"
         eyebrow="02 — Method"
         title="Pairs, light and unobtrusive."
         body="We move through your day like a memory in real time. No staged kisses. No lining-up of aunties. Just the marriage as it actually happens."
       />
       <CinematicScene
-        src="https://images.unsplash.com/photo-1654764746225-e63f5e90facd?auto=format&fit=crop&w=2400&q=80"
+        src="/images/wedding/bridal-portrait.jpg"
         eyebrow="03 — A note"
         title="We photograph like / we're listening."
         isQuote
@@ -1983,7 +1983,7 @@ function GlassVariant() {
       {/* Sticky hero photo */}
       <div className="sticky top-0 -z-10 h-screen w-full overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1604017011826-d3b4c23f8914?auto=format&fit=crop&w=2400&q=80"
+          src="/images/wedding/couple-at-mandap.jpg"
           alt="A wedding"
           fill
           sizes="100vw"
@@ -2137,9 +2137,9 @@ function StickyVariant() {
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const photos = [
-    "https://images.unsplash.com/photo-1681717166573-f71589207785?auto=format&fit=crop&w=1600&q=80",
-    "https://images.unsplash.com/photo-1604017011826-d3b4c23f8914?auto=format&fit=crop&w=1600&q=80",
-    "https://images.unsplash.com/photo-1654764746225-e63f5e90facd?auto=format&fit=crop&w=1600&q=80",
+    "/images/haldi/turmeric-splash.jpg",
+    "/images/wedding/couple-at-mandap.jpg",
+    "/images/wedding/bridal-portrait.jpg",
   ];
 
   const chapters = [
@@ -2561,7 +2561,7 @@ function ScrollReelVariant() {
       <ReelOpener />
 
       <ReelSection
-        src="https://images.unsplash.com/photo-1681717166573-f71589207785?auto=format&fit=crop&w=2400&q=80"
+        src="/images/haldi/turmeric-splash.jpg"
         no="I"
         label="Origin"
         title="A simple obsession."
@@ -2569,7 +2569,7 @@ function ScrollReelVariant() {
       />
 
       <ReelSection
-        src="https://images.unsplash.com/photo-1604017011826-d3b4c23f8914?auto=format&fit=crop&w=2400&q=80"
+        src="/images/wedding/couple-at-mandap.jpg"
         no="II"
         label="Method"
         title="Pairs, light & unobtrusive."
@@ -2577,7 +2577,7 @@ function ScrollReelVariant() {
       />
 
       <ReelSection
-        src="https://images.unsplash.com/photo-1654764746225-e63f5e90facd?auto=format&fit=crop&w=2400&q=80"
+        src="/images/wedding/bridal-portrait.jpg"
         no="III"
         label="A note"
         title='"We photograph like we are listening."'
@@ -2606,19 +2606,19 @@ function ScrollReelVariant() {
 
 const MOMENTS = [
   {
-    src: "https://images.unsplash.com/photo-1681717166573-f71589207785?auto=format&fit=crop&w=1200&q=80",
+    src: "/images/haldi/turmeric-splash.jpg",
     label: "A morning of yellow",
     place: "Riya & Karthik · Coorg",
     date: "Feb 2024",
   },
   {
-    src: "https://images.unsplash.com/photo-1702378154233-9b870ff8f1b3?auto=format&fit=crop&w=1200&q=80",
+    src: "/images/mehndi/bride-hands.jpg",
     label: "Hands of the wedding",
     place: "Anaya & Ishaan · Jaipur",
     date: "Dec 2023",
   },
   {
-    src: "https://images.unsplash.com/photo-1604017011826-d3b4c23f8914?auto=format&fit=crop&w=1200&q=80",
+    src: "/images/wedding/couple-at-mandap.jpg",
     label: "At the mandap",
     place: "Meera & Aditya · Udaipur",
     date: "Nov 2023",
@@ -2682,7 +2682,7 @@ function MeetTheStudio() {
             >
               <motion.div style={{ y: heroY }} className="absolute inset-[-8%] will-change-transform">
                 <Image
-                  src="https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=1600&q=80"
+                  src="/images/pre-wedding/window-light.jpg"
                   alt="The studio at work"
                   fill
                   sizes="(min-width: 1024px) 60vw, 100vw"
@@ -3111,22 +3111,27 @@ function MeetTheStudio() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 1 }}
-          className="relative mt-28 overflow-hidden rounded-tl-[4rem] rounded-br-[4rem] rounded-tr-xl rounded-bl-xl sm:mt-40"
+          className="relative isolate mt-28 overflow-hidden rounded-tl-[4rem] rounded-br-[4rem] rounded-tr-xl rounded-bl-xl bg-ink sm:mt-40"
         >
-          {/* Background image */}
-          <div className="absolute inset-0 -z-10">
-            <Image
-              src="https://images.unsplash.com/photo-1654764746225-e63f5e90facd?auto=format&fit=crop&w=2400&q=80"
-              alt="Closing"
-              fill
-              sizes="100vw"
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-ink/55 via-ink/55 to-ink/85" />
-            <div className="absolute inset-0 bg-[radial-gradient(70%_60%_at_50%_50%,rgba(232,168,150,0.18),transparent_70%)]" />
-          </div>
+          {/* Background image — direct child, no negative z-index.
+              The `isolate` on the parent creates a stacking context so
+              the absolute layers stack predictably. */}
+          <Image
+            src="/images/wedding/couple-at-mandap.jpg"
+            alt="Couple at the mandap"
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+          />
+          {/* Soft gradient — light at top so the photo shows, darker at bottom for text */}
+          <div className="absolute inset-0 bg-gradient-to-b from-ink/20 via-ink/40 to-ink/80" />
+          {/* Warm blush bloom at the centre — adds atmosphere */}
+          <div className="absolute inset-0 bg-[radial-gradient(70%_60%_at_50%_45%,rgba(232,168,150,0.25),transparent_75%)] mix-blend-soft-light" />
+          {/* Subtle vignette at the corners */}
+          <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_50%,transparent_50%,rgba(31,15,41,0.55)_100%)]" />
 
-          <div className="relative px-6 py-20 text-center sm:px-12 sm:py-28">
+          <div className="relative z-10 px-6 py-20 text-center sm:px-12 sm:py-28">
             <span className="text-[0.55rem] uppercase tracking-[0.42em] text-blush">
               ⊹ Where we go from here ⊹
             </span>
@@ -3282,7 +3287,7 @@ function _LegacyScrapbook() {
             <div className="relative mt-16 grid grid-cols-1 gap-12 sm:grid-cols-12 sm:gap-8">
               <div className="relative flex justify-center sm:col-span-5 sm:justify-start sm:pl-12">
                 <PinnedPolaroid
-                  src="https://images.unsplash.com/photo-1681717166573-f71589207785?auto=format&fit=crop&w=900&q=80"
+                  src="/images/haldi/turmeric-splash.jpg"
                   caption="Riya · Haldi"
                   date="03/2024"
                   tilt={-4}
@@ -3381,9 +3386,9 @@ function _LegacyScrapbook() {
                   </StickyNote>
                   <PhotoStrip
                     photos={[
-                      "https://images.unsplash.com/photo-1654764746225-e63f5e90facd?auto=format&fit=crop&w=300&q=80",
-                      "https://images.unsplash.com/photo-1702378154233-9b870ff8f1b3?auto=format&fit=crop&w=300&q=80",
-                      "https://images.unsplash.com/photo-1604017011826-d3b4c23f8914?auto=format&fit=crop&w=300&q=80",
+                      "/images/wedding/bridal-portrait.jpg",
+                      "/images/mehndi/bride-hands.jpg",
+                      "/images/wedding/couple-at-mandap.jpg",
                     ]}
                   />
                 </div>

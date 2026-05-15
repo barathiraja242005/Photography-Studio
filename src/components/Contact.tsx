@@ -3,22 +3,23 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowUpRight,
+  ArrowUp,
   AtSign,
   Calendar,
   Check,
   Clock,
+  Globe,
   Heart,
   Mail,
   MapPin,
+  Newspaper,
   Phone,
   Send,
   Sparkles,
 } from "lucide-react";
-import { SectionLabel } from "@/components/Ornament";
-import { Mandala } from "@/components/Ornament";
+import { Mandala, SectionLabel } from "@/components/Ornament";
 import Tilt3D from "@/components/Tilt3D";
-import { site, currentYear } from "@/config/site";
+import { currentYear, site } from "@/config/site";
 
 const NEXT_DATES = [
   { day: "Sat", date: "Feb 28", status: "booked" },
@@ -634,8 +635,6 @@ const NAV = [
   ...site.nav.links.filter((l) => l.label !== "Home"),
   { href: "#portfolio", label: "Portfolio" },
 ];
-
-import { ArrowUp, Globe, Newspaper } from "lucide-react";
 
 function Newsletter() {
   const [email, setEmail] = useState("");

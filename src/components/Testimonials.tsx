@@ -20,9 +20,6 @@ import { TESTIMONIAL_AVATARS } from "@/lib/images";
 import { EASE } from "@/lib/motion";
 import Tilt3D from "@/components/Tilt3D";
 
-const u = (id: string, w = 1600) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
-
 const VOICES = [
   {
     quote:
@@ -31,7 +28,7 @@ const VOICES = [
     place: "Jaipur, Rajasthan",
     date: "December 2023",
     avatar: TESTIMONIAL_AVATARS[0],
-    photo: u("photo-1610173826014-d131b02d69ca"),
+    photo: "/images/wedding/bride-crimson-gold.jpg",
     accent: "plum" as const,
   },
   {
@@ -41,7 +38,7 @@ const VOICES = [
     place: "Coorg, Karnataka",
     date: "February 2024",
     avatar: TESTIMONIAL_AVATARS[1],
-    photo: u("photo-1604017011826-d3b4c23f8914"),
+    photo: "/images/wedding/couple-at-mandap.jpg",
     accent: "terracotta" as const,
   },
   {
@@ -51,7 +48,7 @@ const VOICES = [
     place: "Udaipur, Rajasthan",
     date: "November 2023",
     avatar: TESTIMONIAL_AVATARS[2],
-    photo: u("photo-1606800052052-a08af7148866"),
+    photo: "/images/pre-wedding/window-light.jpg",
     accent: "jade" as const,
   },
   {
@@ -61,7 +58,7 @@ const VOICES = [
     place: "Goa",
     date: "January 2024",
     avatar: TESTIMONIAL_AVATARS[3],
-    photo: u("photo-1606216794074-735e91aa2c92"),
+    photo: "/images/pre-wedding/golden-hour.jpg",
     accent: "ruby" as const,
   },
 ];

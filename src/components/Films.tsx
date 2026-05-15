@@ -10,9 +10,6 @@ import Tilt3D from "@/components/Tilt3D";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 
-const u = (id: string, w = 1400) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
-
 type Film = {
   title: string;
   location: string;
@@ -35,7 +32,7 @@ const FILMS: Film[] = [
     title: "Anaya & Ishaan",
     location: "Jaipur · Dec 2023",
     duration: "4:18",
-    poster: u("photo-1654764746225-e63f5e90facd"),
+    poster: "/images/wedding/bridal-portrait.jpg",
     videoSrc: "/videos/films.mp4",
     kind: "feature",
   },
@@ -43,7 +40,7 @@ const FILMS: Film[] = [
     title: "Riya & Karthik",
     location: "Coorg · Feb 2024",
     duration: "3:01",
-    poster: u("photo-1606800052052-a08af7148866"),
+    poster: "/images/pre-wedding/window-light.jpg",
     videoSrc: "/videos/films.mp4",
     kind: "feature",
   },
@@ -51,7 +48,7 @@ const FILMS: Film[] = [
     title: "Meera & Aditya",
     location: "Udaipur · Nov 2023",
     duration: "4:45",
-    poster: u("photo-1604017011826-d3b4c23f8914"),
+    poster: "/images/wedding/couple-at-mandap.jpg",
     videoSrc: "/videos/films.mp4",
     kind: "feature",
   },
@@ -59,7 +56,7 @@ const FILMS: Film[] = [
     title: "Sneha & Rohan",
     location: "Goa · Jan 2024",
     duration: "3:22",
-    poster: u("photo-1606216794074-735e91aa2c92"),
+    poster: "/images/pre-wedding/golden-hour.jpg",
     videoSrc: "/videos/films.mp4",
     kind: "feature",
   },
@@ -67,7 +64,7 @@ const FILMS: Film[] = [
     title: "Sofia & Henri",
     location: "Goa · Dec 2023",
     duration: "2:58",
-    poster: u("photo-1610173826014-d131b02d69ca"),
+    poster: "/images/wedding/bride-crimson-gold.jpg",
     videoSrc: "/videos/films.mp4",
     kind: "feature",
   },
@@ -78,7 +75,7 @@ const REELS: Film[] = [
     title: "Baraat dance",
     location: "Sneha & Rohan",
     duration: "0:30",
-    poster: u("photo-1632340904083-7308c4ea7e2d"),
+    poster: "/images/baraat/horseback.jpg",
     videoSrc: "/videos/films.mp4",
     kind: "reel",
   },
@@ -86,7 +83,7 @@ const REELS: Film[] = [
     title: "Haldi splash",
     location: "Riya · morning",
     duration: "0:38",
-    poster: u("photo-1681717166573-f71589207785"),
+    poster: "/images/haldi/turmeric-splash.jpg",
     videoSrc: "/videos/films.mp4",
     kind: "reel",
   },
@@ -94,7 +91,7 @@ const REELS: Film[] = [
     title: "Mehndi hands",
     location: "Anaya · night",
     duration: "0:45",
-    poster: u("photo-1702378154233-9b870ff8f1b3"),
+    poster: "/images/mehndi/bride-hands.jpg",
     videoSrc: "/videos/films.mp4",
     kind: "reel",
   },
@@ -102,7 +99,7 @@ const REELS: Film[] = [
     title: "Sangeet sisters",
     location: "Tara · evening",
     duration: "0:52",
-    poster: u("photo-1764176269321-6d14f4af09c7"),
+    poster: "/images/sangeet/sisters-singing.jpg",
     videoSrc: "/videos/films.mp4",
     kind: "reel",
   },
@@ -110,7 +107,7 @@ const REELS: Film[] = [
     title: "First look",
     location: "Priya & Karthik",
     duration: "0:41",
-    poster: u("photo-1525258946800-98cfd641d0de"),
+    poster: "/images/pre-wedding/first-look.jpg",
     videoSrc: "/videos/films.mp4",
     kind: "reel",
   },
@@ -118,7 +115,7 @@ const REELS: Film[] = [
     title: "Elephant baraat",
     location: "Rohan · sunset",
     duration: "0:36",
-    poster: u("photo-1715347240072-69c73b0ba3ab"),
+    poster: "/images/baraat/elephant.jpg",
     videoSrc: "/videos/films.mp4",
     kind: "reel",
   },

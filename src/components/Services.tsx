@@ -23,9 +23,6 @@ import { Ornament } from "@/components/Ornament";
 import { EASE } from "@/lib/motion";
 import Tilt3D from "@/components/Tilt3D";
 
-const u = (id: string, w = 1400) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
-
 type Accent = "plum" | "jade" | "terracotta" | "ruby";
 
 const ACCENT: Record<
@@ -90,7 +87,7 @@ const SERVICES: Service[] = [
     icon: Heart,
     timeIcon: Clock,
     time: "All Day · 12 hrs",
-    img: u("photo-1654764746225-e63f5e90facd"),
+    img: "/images/wedding/bridal-portrait.jpg",
     accent: "plum",
     span: "sm:col-span-2 lg:col-span-8 lg:row-span-2",
     shape: "rounded-tl-[5rem] rounded-br-[5rem] rounded-tr-2xl rounded-bl-2xl",
@@ -104,7 +101,7 @@ const SERVICES: Service[] = [
     icon: Crown,
     timeIcon: Moon,
     time: "Evening",
-    img: u("photo-1632340904083-7308c4ea7e2d"),
+    img: "/images/baraat/horseback.jpg",
     accent: "terracotta",
     span: "sm:col-span-1 lg:col-span-4",
     shape: "rounded-tr-[3rem] rounded-bl-[3rem] rounded-tl-md rounded-br-md",
@@ -116,7 +113,7 @@ const SERVICES: Service[] = [
     icon: Flower2,
     timeIcon: Sun,
     time: "Day-Before",
-    img: u("photo-1702378154233-9b870ff8f1b3"),
+    img: "/images/mehndi/bride-hands.jpg",
     accent: "ruby",
     span: "sm:col-span-1 lg:col-span-4",
     shape: "rounded-tl-[3rem] rounded-br-[3rem] rounded-tr-md rounded-bl-md",
@@ -128,7 +125,7 @@ const SERVICES: Service[] = [
     icon: Sparkles,
     timeIcon: Sun,
     time: "Morning",
-    img: u("photo-1681717166573-f71589207785"),
+    img: "/images/haldi/turmeric-splash.jpg",
     accent: "jade",
     span: "sm:col-span-1 lg:col-span-4",
     shape: "rounded-t-[3rem] rounded-b-xl",
@@ -140,7 +137,7 @@ const SERVICES: Service[] = [
     icon: Music,
     timeIcon: Moon,
     time: "Night",
-    img: u("photo-1764176269321-6d14f4af09c7"),
+    img: "/images/sangeet/sisters-singing.jpg",
     accent: "plum",
     span: "sm:col-span-1 lg:col-span-4",
     shape: "rounded-b-[3rem] rounded-t-xl",
@@ -152,7 +149,7 @@ const SERVICES: Service[] = [
     icon: Camera,
     timeIcon: Clock,
     time: "Anytime",
-    img: u("photo-1606800052052-a08af7148866"),
+    img: "/images/pre-wedding/window-light.jpg",
     accent: "jade",
     span: "sm:col-span-2 lg:col-span-4",
     shape: "rounded-tr-[3rem] rounded-bl-[3rem] rounded-tl-md rounded-br-md",
