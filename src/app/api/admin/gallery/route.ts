@@ -4,6 +4,7 @@ import { z } from "zod";
 import { withAdmin } from "@/lib/auth/guard";
 import { db, isDbConfigured } from "@/lib/db/client";
 import { galleryPhotos } from "@/lib/db/schema";
+import { formatDbError } from "@/lib/db/format-error";
 import { revalidateSiteData } from "@/lib/get-site-data";
 
 const Body = z.object({
@@ -36,10 +37,7 @@ async function getHandler() {
       .orderBy(asc(galleryPhotos.sortOrder), asc(galleryPhotos.id));
     return NextResponse.json({ items });
   } catch (err) {
-    return NextResponse.json(
-      { error: `DB query failed: ${err instanceof Error ? err.message : String(err)}` },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: formatDbError(err) }, { status: 500 });
   }
 }
 

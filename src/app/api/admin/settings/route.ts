@@ -3,6 +3,7 @@ import { desc } from "drizzle-orm";
 import { withAdmin } from "@/lib/auth/guard";
 import { db, isDbConfigured } from "@/lib/db/client";
 import { siteSettings } from "@/lib/db/schema";
+import { formatDbError } from "@/lib/db/format-error";
 import { revalidateSiteData } from "@/lib/get-site-data";
 
 async function getHandler() {
@@ -21,10 +22,7 @@ async function getHandler() {
     const data = rows[0] ? JSON.parse(rows[0].data) : null;
     return NextResponse.json({ data });
   } catch (err) {
-    return NextResponse.json(
-      { error: `DB query failed: ${err instanceof Error ? err.message : String(err)}` },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: formatDbError(err) }, { status: 500 });
   }
 }
 
