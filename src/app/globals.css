@@ -1,26 +1,368 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* === PLUM × JADE × TERRACOTTA × BLUSH ===
+     A rich jewel palette — no gold, no black.
+     Deep midnight plum text on warm peach-cream backgrounds.
+     Jade greens and terracotta earth tones for accents.
+     Ruby pops for CTAs. */
+
+  --bg: #f5ece1;
+  --bg-soft: #ead6c2;
+  --paper: #fdf8f0;
+
+  --ink: #1f0f29;
+  --ink-soft: #4d2a4a;
+  --muted: #857386;
+  --line: rgba(31, 15, 41, 0.12);
+
+  --plum: #6b2454;
+  --plum-deep: #4a1c3d;
+  --plum-soft: #9c4a7d;
+
+  --jade: #0d5547;
+  --jade-deep: #073629;
+  --jade-soft: #2a7864;
+
+  --terracotta: #b65c45;
+  --terracotta-soft: #d68870;
+
+  --blush: #e8a896;
+  --blush-soft: #f3c8b8;
+
+  --ruby: #d4365e;
+  --ruby-deep: #a52546;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-bg-soft: var(--bg-soft);
+  --color-paper: var(--paper);
+
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+
+  --color-plum: var(--plum);
+  --color-plum-deep: var(--plum-deep);
+  --color-plum-soft: var(--plum-soft);
+
+  --color-jade: var(--jade);
+  --color-jade-deep: var(--jade-deep);
+  --color-jade-soft: var(--jade-soft);
+
+  --color-terracotta: var(--terracotta);
+  --color-terracotta-soft: var(--terracotta-soft);
+
+  --color-blush: var(--blush);
+  --color-blush-soft: var(--blush-soft);
+
+  --color-ruby: var(--ruby);
+  --color-ruby-deep: var(--ruby-deep);
+
+  /* Legacy aliases — keeps existing class names working.
+     gold → terracotta · maroon → plum · saffron → ruby */
+  --color-gold: var(--terracotta);
+  --color-gold-soft: var(--blush);
+  --color-gold-deep: var(--terracotta-soft);
+  --color-maroon: var(--plum);
+  --color-maroon-deep: var(--plum-deep);
+  --color-emerald: var(--jade);
+  --color-emerald-soft: var(--jade-soft);
+  --color-emerald-deep: var(--jade-deep);
+  --color-rose: var(--ruby);
+  --color-rose-deep: var(--ruby-deep);
+  --color-rose-soft: var(--blush);
+  --color-copper: var(--terracotta);
+  --color-copper-soft: var(--blush);
+  --color-copper-deep: var(--terracotta-soft);
+  --color-magenta: var(--plum);
+
+  --font-display: var(--font-cormorant);
+  --font-sans: var(--font-jakarta);
+  --font-script: var(--font-tangerine);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+html.lenis,
+html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+::selection {
+  background: var(--plum);
+  color: var(--bg);
+}
+
+.font-display {
+  font-family: var(--font-cormorant), ui-serif, Georgia, serif;
+  font-feature-settings: "ss01";
+}
+
+.font-script {
+  font-family: var(--font-tangerine), ui-serif, Georgia, serif;
+}
+
+.text-balance { text-wrap: balance; }
+.bg-paper { background: var(--paper); }
+
+button,
+a { cursor: pointer; }
+
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ============================================================
+   SHAPES — improved card / image silhouettes
+   ============================================================ */
+
+/* Mandap arch — top rounded, bottom flat.
+   Used on portrait imagery (about, services hero, gallery).  */
+.arch-top {
+  border-radius: 50% 50% 0.5rem 0.5rem / 25% 25% 0.5rem 0.5rem;
+}
+
+/* Wider/flatter arch for landscape / horizontal cards */
+.arch-soft {
+  border-radius: 40% 40% 1rem 1rem / 12% 12% 1rem 1rem;
+}
+
+/* Pointed-arch (mihrab-style) — narrower at top */
+.arch-pointed {
+  border-radius: 50% 50% 0.5rem 0.5rem / 40% 40% 0.5rem 0.5rem;
+}
+
+/* Asymmetric edge — top-left rounded, bottom-right rounded */
+.asym-1 {
+  border-radius: 4rem 1rem 4rem 1rem;
+}
+
+/* Asymmetric edge — opposite */
+.asym-2 {
+  border-radius: 1rem 4rem 1rem 4rem;
+}
+
+/* Frame ring — paint a thin offset border under the image */
+.frame-ring {
+  position: relative;
+}
+.frame-ring::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border: 1px solid var(--terracotta);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.float-soft { animation: float-soft 6s ease-in-out infinite; }
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track { animation: marquee 38s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Gradient-clipped text for the giant footer wordmark
+   — same vertical plum → terracotta → transparent fade as the original */
+.wordmark-shimmer {
+  background-image: linear-gradient(
+    180deg,
+    var(--plum) 0%,
+    var(--terracotta) 60%,
+    transparent 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Soft glow halo behind the wordmark */
+@keyframes wordmark-glow {
+  0%, 100% { opacity: 0.35; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 0.55; transform: translate(-50%, -50%) scale(1.1); }
+}
+.wordmark-glow {
+  animation: wordmark-glow 6s ease-in-out infinite;
+}
+
+/* Hollow display type — for the huge backdrop wordmark in About */
+.text-hollow {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--plum);
+  text-stroke: 1px var(--plum);
+}
+
+/* Slow horizontal drift for the wordmark */
+@keyframes drift-slow {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-25%); }
+}
+.drift-slow { animation: drift-slow 60s linear infinite; }
+
+@keyframes ken-burns {
+  0%   { transform: scale(1.0) translate3d(0,0,0); }
+  100% { transform: scale(1.12) translate3d(0,-1.5%,0); }
+}
+.ken-burns { animation: ken-burns 18s ease-in-out both alternate infinite; }
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+.spin-slow { animation: spin-slow 60s linear infinite; }
+
+/* ============================================================
+   SCRAPBOOK — aged paper, lined ruling, tape, stamps
+   ============================================================ */
+
+.paper-aged {
+  background-color: #f5e9d4;
+  background-image:
+    radial-gradient(ellipse at top left, rgba(182, 92, 69, 0.08), transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(107, 36, 84, 0.06), transparent 60%);
+}
+
+.paper-lined {
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0,
+    transparent calc(2rem - 1px),
+    rgba(31, 15, 41, 0.07) calc(2rem - 1px),
+    rgba(31, 15, 41, 0.07) 2rem
+  );
+}
+
+.paper-grain {
+  position: relative;
+}
+.paper-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.18  0 0 0 0 0.08  0 0 0 0 0.16  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: multiply;
+  opacity: 0.45;
+  z-index: 0;
+}
+
+/* Washi tape — semi-transparent striped tape */
+.washi-tape {
+  background-color: rgba(182, 92, 69, 0.6);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0,
+    transparent 5px,
+    rgba(255, 255, 255, 0.22) 5px,
+    rgba(255, 255, 255, 0.22) 6px
+  );
+}
+.washi-tape-plum {
+  background-color: rgba(107, 36, 84, 0.55);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent 0,
+    transparent 5px,
+    rgba(255, 255, 255, 0.2) 5px,
+    rgba(255, 255, 255, 0.2) 6px
+  );
+}
+.washi-tape-jade {
+  background-color: rgba(13, 85, 71, 0.55);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0,
+    transparent 4px,
+    rgba(255, 255, 255, 0.2) 4px,
+    rgba(255, 255, 255, 0.2) 5px
+  );
+}
+
+/* Coffee ring stain */
+.coffee-ring {
+  border: 3px solid rgba(182, 92, 69, 0.18);
+  box-shadow:
+    inset 0 0 0 2px rgba(182, 92, 69, 0.06),
+    0 0 0 1px rgba(182, 92, 69, 0.1);
+}
+
+/* Torn-paper edge — used as a clip-path */
+.torn-paper {
+  clip-path: polygon(
+    1% 3%, 8% 0%, 14% 4%, 22% 1%, 31% 5%, 40% 0%, 49% 4%, 58% 1%, 67% 5%,
+    76% 0%, 85% 4%, 94% 1%, 100% 5%,
+    99% 95%, 92% 100%, 84% 96%, 75% 100%, 66% 95%, 57% 100%, 48% 96%, 39% 100%,
+    30% 95%, 21% 100%, 12% 96%, 4% 100%, 0% 95%
+  );
+}
+
+/* Rubber stamp ink */
+.stamp-ink {
+  filter: drop-shadow(0 0 0.5px currentColor);
+  letter-spacing: 0.05em;
+}
+
+/* Push pin */
+.push-pin {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, var(--ruby) 0%, var(--ruby-deep) 60%, rgba(0,0,0,0.4) 100%);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4);
+}
+
+/* Spiral binding hole */
+.spiral-hole {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, 0.5),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Jewel divider */
+.divider-jewel {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--terracotta) 25%,
+    var(--plum) 50%,
+    var(--jade-soft) 75%,
+    transparent
+  );
 }
