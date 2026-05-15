@@ -19,7 +19,8 @@ import {
 } from "lucide-react";
 import { Mandala, SectionLabel } from "@/components/Ornament";
 import Tilt3D from "@/components/Tilt3D";
-import { currentYear, site } from "@/config/site";
+import { currentYear } from "@/config/site";
+import { useSite } from "@/components/SiteContext";
 
 const NEXT_DATES = [
   { day: "Sat", date: "Feb 28", status: "booked" },
@@ -37,6 +38,7 @@ const STATUS = {
 } as const;
 
 export default function Contact() {
+  const site = useSite();
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -624,19 +626,10 @@ function WhatsAppGlyph(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-const SOCIAL = [
-  { name: site.social.instagram.name, handle: site.social.instagram.handle, url: site.social.instagram.url, Icon: IGGlyph },
-  { name: site.social.pinterest.name, handle: site.social.pinterest.handle, url: site.social.pinterest.url, Icon: PinterestGlyph },
-  { name: site.social.youtube.name, handle: site.social.youtube.handle, url: site.social.youtube.url, Icon: YouTubeGlyph },
-  { name: site.social.whatsapp.name, handle: site.social.whatsapp.handle, url: site.social.whatsapp.url, Icon: WhatsAppGlyph },
-];
-
-const NAV = [
-  ...site.nav.links.filter((l) => l.label !== "Home"),
-  { href: "#portfolio", label: "Portfolio" },
-];
+// SOCIAL + NAV are now derived from useSite() inside Footer/Newsletter — see below.
 
 function Newsletter() {
+  const site = useSite();
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -729,6 +722,17 @@ function BackToTop() {
 }
 
 export function Footer() {
+  const site = useSite();
+  const SOCIAL = [
+    { name: site.social.instagram.name, handle: site.social.instagram.handle, url: site.social.instagram.url, Icon: IGGlyph },
+    { name: site.social.pinterest.name, handle: site.social.pinterest.handle, url: site.social.pinterest.url, Icon: PinterestGlyph },
+    { name: site.social.youtube.name, handle: site.social.youtube.handle, url: site.social.youtube.url, Icon: YouTubeGlyph },
+    { name: site.social.whatsapp.name, handle: site.social.whatsapp.handle, url: site.social.whatsapp.url, Icon: WhatsAppGlyph },
+  ];
+  const NAV = [
+    ...site.nav.links.filter((l) => l.label !== "Home"),
+    { href: "#portfolio", label: "Portfolio" },
+  ];
   return (
     <footer className="relative overflow-hidden border-t border-line bg-bg-soft">
       {/* Background flourish */}

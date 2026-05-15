@@ -22,6 +22,7 @@ import {
 import { Ornament } from "@/components/Ornament";
 import { EASE } from "@/lib/motion";
 import Tilt3D from "@/components/Tilt3D";
+import { useSite } from "@/components/SiteContext";
 
 type Accent = "plum" | "jade" | "terracotta" | "ruby";
 
@@ -69,24 +70,16 @@ type Service = {
   featured?: boolean;
 };
 
-/* Tight, gap-free 12-col layout:
- *  ┌──────────────────────┬───────────┐
- *  │                      │  Baraat   │  row 1
- *  │     Wedding 8×2      ├───────────┤
- *  │     (featured)       │  Mehndi   │  row 2
- *  ├────────┬────────┬────┴───────────┤
- *  │ Haldi  │Sangeet │   Pre-Wedding  │  row 3
- *  └────────┴────────┴────────────────┘
- */
-const SERVICES: Service[] = [
+// Visual slots — index-aligned to site.services.items. Each slot defines the
+// look of one tile (icon, image, accent, layout span, corner shape). The text
+// content (name/blurb/no/time) comes from Sanity via useSite() below.
+const SERVICE_SLOTS: Pick<
+  Service,
+  "icon" | "timeIcon" | "img" | "accent" | "span" | "shape" | "featured"
+>[] = [
   {
-    no: "01",
-    name: "Wedding",
-    blurb:
-      "Full-day candid coverage — pheras, vidaai, the speeches and the silences. Two photographers, six hundred edits, one heirloom album.",
     icon: Heart,
     timeIcon: Clock,
-    time: "All Day · 12 hrs",
     img: "/images/wedding/bridal-portrait.jpg",
     accent: "plum",
     span: "sm:col-span-2 lg:col-span-8 lg:row-span-2",
@@ -94,61 +87,40 @@ const SERVICES: Service[] = [
     featured: true,
   },
   {
-    no: "02",
-    name: "Baraat",
-    blurb:
-      "Dhol, horse, friends carrying you in — the arrival deserves its own film.",
     icon: Crown,
     timeIcon: Moon,
-    time: "Evening",
     img: "/images/baraat/horseback.jpg",
     accent: "terracotta",
     span: "sm:col-span-1 lg:col-span-4",
     shape: "rounded-tr-[3rem] rounded-bl-[3rem] rounded-tl-md rounded-br-md",
   },
   {
-    no: "03",
-    name: "Mehndi",
-    blurb: "Hands curling with henna. Songs. Intimate, slow, hand-held.",
     icon: Flower2,
     timeIcon: Sun,
-    time: "Day-Before",
     img: "/images/mehndi/bride-hands.jpg",
     accent: "ruby",
     span: "sm:col-span-1 lg:col-span-4",
     shape: "rounded-tl-[3rem] rounded-br-[3rem] rounded-tr-md rounded-bl-md",
   },
   {
-    no: "04",
-    name: "Haldi",
-    blurb: "Turmeric, laughter, sunlight on skin. The small warm ritual.",
     icon: Sparkles,
     timeIcon: Sun,
-    time: "Morning",
     img: "/images/haldi/turmeric-splash.jpg",
     accent: "jade",
     span: "sm:col-span-1 lg:col-span-4",
     shape: "rounded-t-[3rem] rounded-b-xl",
   },
   {
-    no: "05",
-    name: "Sangeet",
-    blurb: "Choreographed numbers, unchoreographed nani-dancing. Both kept.",
     icon: Music,
     timeIcon: Moon,
-    time: "Night",
     img: "/images/sangeet/sisters-singing.jpg",
     accent: "plum",
     span: "sm:col-span-1 lg:col-span-4",
     shape: "rounded-b-[3rem] rounded-t-xl",
   },
   {
-    no: "06",
-    name: "Pre-Wedding",
-    blurb: "A travelling portrait session — at home, on a hill, anywhere.",
     icon: Camera,
     timeIcon: Clock,
-    time: "Anytime",
     img: "/images/pre-wedding/window-light.jpg",
     accent: "jade",
     span: "sm:col-span-2 lg:col-span-4",
@@ -272,61 +244,44 @@ function ServiceTile({ s, i }: { s: Service; i: number }) {
   );
 }
 
-const INCLUSIONS = [
-  {
-    icon: Users,
-    label: "Two Photographers",
-    sub: "Lead + second shooter",
-    accent: "plum" as const,
-  },
-  {
-    icon: Plane,
-    label: "Aerial Coverage",
-    sub: "Drone where permitted",
-    accent: "jade" as const,
-  },
-  {
-    icon: Zap,
-    label: "Sneak Peek",
-    sub: "Within the same week",
-    accent: "ruby" as const,
-  },
-  {
-    icon: BookOpen,
-    label: "Editorial Album",
-    sub: "Hand-bound · archival",
-    accent: "terracotta" as const,
-  },
-  {
-    icon: MapPin,
-    label: "Travel Included",
-    sub: "Anywhere in India",
-    accent: "plum" as const,
-  },
+// Inclusion visual slots — index-aligned to site.services.inclusions.
+const INCLUSION_SLOTS = [
+  { icon: Users, accent: "plum" as const },
+  { icon: Plane, accent: "jade" as const },
+  { icon: Zap, accent: "ruby" as const },
+  { icon: BookOpen, accent: "terracotta" as const },
+  { icon: MapPin, accent: "plum" as const },
 ];
 
-const ACCENT_DOT = {
-  plum: "bg-plum text-bg",
-  jade: "bg-jade text-bg",
-  ruby: "bg-ruby text-bg",
-  terracotta: "bg-terracotta text-bg",
-};
-
-const ACCENT_RING = {
-  plum: "group-hover:border-plum/60",
-  jade: "group-hover:border-jade/60",
-  ruby: "group-hover:border-ruby/60",
-  terracotta: "group-hover:border-terracotta/60",
-};
-
 export default function Services() {
+  const site = useSite();
+
+  // Merge Sanity-driven text with hardcoded visual slots, index-aligned. If
+  // Sanity has more items than slots, cycle the slots so visuals stay
+  // consistent.
+  const SERVICES: Service[] = site.services.items.map((item, i) => {
+    const slot = SERVICE_SLOTS[i % SERVICE_SLOTS.length];
+    return {
+      no: item.no,
+      name: item.name,
+      blurb: item.blurb,
+      time: item.time,
+      ...slot,
+    };
+  });
+
+  const INCLUSIONS = site.services.inclusions.map((item, i) => {
+    const slot = INCLUSION_SLOTS[i % INCLUSION_SLOTS.length];
+    return { label: item.label, sub: item.sub, ...slot };
+  });
+
   return (
     <section id="services" className="relative overflow-hidden bg-bg-soft py-28 sm:py-36">
       {/* Background flourish */}
       <div className="pointer-events-none absolute -top-32 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-blush/15 blur-[140px]" />
 
       <div className="relative mx-auto w-full max-w-7xl px-6 sm:px-10">
-        <Ornament label="The Coverage" />
+        <Ornament label={site.services.eyebrow} />
 
         <motion.h2
           initial={{ opacity: 0, y: 24 }}
@@ -335,9 +290,9 @@ export default function Services() {
           transition={{ duration: 0.9, delay: 0.1 }}
           className="mt-8 text-center font-display text-4xl leading-[1.05] tracking-tight text-ink sm:text-5xl lg:text-6xl"
         >
-          From haldi to{" "}
+          {site.services.titleMain}{" "}
           <span className="font-script text-5xl text-plum sm:text-6xl lg:text-7xl">
-            vidaai.
+            {site.services.titleScript}
           </span>
         </motion.h2>
 
@@ -348,8 +303,7 @@ export default function Services() {
           transition={{ duration: 0.9, delay: 0.2 }}
           className="mx-auto mt-6 max-w-2xl text-center text-base text-ink-soft sm:text-lg"
         >
-          Every Indian wedding is a small civilisation of rituals. We come ready
-          for all of them — six chapters, one devoted lens.
+          {site.services.description}
         </motion.p>
 
         {/* Bento mosaic — service photos as full backgrounds */}
@@ -435,17 +389,17 @@ export default function Services() {
           className="mt-10 flex flex-col items-center gap-3"
         >
           <a
-            href="#contact"
+            href={site.services.primaryCTA.href}
             className="group inline-flex items-center gap-3 rounded-full bg-plum px-9 py-4 text-[0.7rem] uppercase tracking-[0.28em] text-bg shadow-[0_15px_40px_-15px_rgba(107,36,84,0.6)] transition-all duration-500 hover:bg-plum-deep hover:shadow-[0_25px_50px_-15px_rgba(107,36,84,0.8)]"
           >
-            Build my package
+            {site.services.primaryCTA.label}
             <ArrowUpRight
               className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
               strokeWidth={1.8}
             />
           </a>
           <span className="text-[0.6rem] uppercase tracking-[0.32em] text-muted">
-            Each wedding is priced custom · Quote in 24 hours
+            {site.services.pricingNote}
           </span>
         </motion.div>
       </div>

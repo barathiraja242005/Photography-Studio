@@ -3,10 +3,9 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { HERO_IMAGES } from "@/lib/images";
 import { EASE } from "@/lib/motion";
 import BgVideo from "@/components/BgVideo";
-import { site } from "@/config/site";
+import { useSite } from "@/components/SiteContext";
 
 const word: Variants = {
   hidden: { y: "110%" },
@@ -17,6 +16,8 @@ const word: Variants = {
 };
 
 export default function Hero() {
+  const site = useSite();
+  const HERO_IMAGES = site.heroImages;
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -38,7 +39,7 @@ export default function Hero() {
         className="absolute inset-0 -z-10 will-change-transform [transform-style:preserve-3d]"
       >
         <BgVideo
-          src="/videos/hero.mp4"
+          src={site.heroVideoSrc}
           poster={HERO_IMAGES[0]}
           className="absolute inset-0 h-full w-full scale-110 object-cover"
         />

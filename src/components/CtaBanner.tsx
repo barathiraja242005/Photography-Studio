@@ -3,10 +3,11 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRight, Phone } from "lucide-react";
-import { CTA_IMAGE } from "@/lib/images";
 import BgVideo from "@/components/BgVideo";
+import { useSite } from "@/components/SiteContext";
 
 export default function CtaBanner() {
+  const site = useSite();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -23,7 +24,7 @@ export default function CtaBanner() {
           style={{ y }}
           className="absolute inset-0 -z-10 will-change-transform"
         >
-          <BgVideo src="/videos/cta.mp4" poster={CTA_IMAGE} />
+          <BgVideo src="/videos/cta.mp4" poster={site.ctaImage} />
           {/* Golden-hour wash: warm haze on top, deep plum only at the very bottom for text-zone contrast */}
           <div className="absolute inset-0 bg-gradient-to-b from-terracotta/35 via-plum/35 to-plum-deep/70" />
           {/* Warm blush bloom upper-left */}

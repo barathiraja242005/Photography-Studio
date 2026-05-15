@@ -5,14 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Menu, Phone, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { EASE } from "@/lib/motion";
-import { site } from "@/config/site";
-
-const PORTFOLIO_LINKS = site.nav.portfolioDropdown;
-const LINKS = site.nav.links.filter(
-  (l) => l.label !== "Home" && l.label !== "Contact"
-);
+import { useSite } from "@/components/SiteContext";
 
 export default function Navbar() {
+  const site = useSite();
+  const PORTFOLIO_LINKS = site.nav.portfolioDropdown;
+  const LINKS = site.nav.links.filter(
+    (l) => l.label !== "Home" && l.label !== "Contact",
+  );
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [dropdown, setDropdown] = useState(false);

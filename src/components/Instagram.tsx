@@ -33,8 +33,12 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import { IG_POSTS, IG_STORIES } from "@/lib/images";
 import { cn } from "@/lib/cn";
+import { useSite } from "@/components/SiteContext";
+import type { SiteData } from "@/lib/types";
+
+type IgPost = SiteData["igPosts"][number];
+type IgStory = SiteData["igStories"][number];
 
 const STATS = [
   { value: 248, label: "Posts" },
@@ -78,6 +82,9 @@ const COMMENT_POOL = [
 const STORY_DURATION = 5000; // ms
 
 export default function Instagram() {
+  const site = useSite();
+  const IG_POSTS = site.igPosts;
+  const IG_STORIES = site.igStories;
   const [tab, setTab] = useState<"posts" | "reels" | "tagged">("posts");
   const [activeStory, setActiveStory] = useState<number | null>(null);
   const [activePost, setActivePost] = useState<number | null>(null);
@@ -416,7 +423,7 @@ function PostTile({
   i,
   onClick,
 }: {
-  p: (typeof IG_POSTS)[number];
+  p: IgPost;
   i: number;
   onClick: () => void;
 }) {
@@ -530,6 +537,8 @@ function StoryViewer({
   startIndex: number;
   onClose: () => void;
 }) {
+  const site = useSite();
+  const IG_STORIES: IgStory[] = site.igStories;
   const [i, setI] = useState(startIndex);
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -555,12 +564,14 @@ function StoryViewer({
     };
     const id = setInterval(tick, 40);
     return () => clearInterval(id);
-  }, [i, paused, progress, onClose]);
+  }, [i, paused, progress, onClose, IG_STORIES.length]);
 
-  // Reset progress when story changes
-  useEffect(() => {
+  // Reset progress when story changes — React 19 "reset during render" pattern.
+  const [prevI, setPrevI] = useState(i);
+  if (prevI !== i) {
+    setPrevI(i);
     setProgress(0);
-  }, [i]);
+  }
 
   const story = IG_STORIES[i];
 
@@ -747,16 +758,21 @@ function PostDetail({
   onClose: () => void;
   onNav: (d: number) => void;
 }) {
+  const site = useSite();
+  const IG_POSTS = site.igPosts;
   const p = IG_POSTS[index];
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [likes, setLikes] = useState(p.likes);
 
-  useEffect(() => {
+  // Reset state when the active post changes — derive during render.
+  const [prevIndex, setPrevIndex] = useState(index);
+  if (prevIndex !== index) {
+    setPrevIndex(index);
     setLiked(false);
     setSaved(false);
     setLikes(p.likes);
-  }, [index, p.likes]);
+  }
 
   function toggleLike() {
     if (liked) {

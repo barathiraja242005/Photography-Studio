@@ -16,48 +16,30 @@ import {
   Star,
 } from "lucide-react";
 import { SectionLabel } from "@/components/Ornament";
-import { TESTIMONIAL_AVATARS } from "@/lib/images";
 import { EASE } from "@/lib/motion";
 import Tilt3D from "@/components/Tilt3D";
+import { useSite } from "@/components/SiteContext";
 
-const VOICES = [
+// Visual defaults (avatar + photo + accent) per slot. Quote / name / place /
+// date can be overridden per-review by Sanity content via `useSite()`.
+const VOICE_SLOTS = [
   {
-    quote:
-      "We had three days of ceremonies in Jaipur and A S Photography was there for every haldi smear, every sangeet performance, every late-night chai. The album feels like the wedding actually felt.",
-    name: "Anaya & Ishaan",
-    place: "Jaipur, Rajasthan",
-    date: "December 2023",
-    avatar: TESTIMONIAL_AVATARS[0],
+    avatar: "/images/wedding/quiet-moment.jpg",
     photo: "/images/wedding/bride-crimson-gold.jpg",
     accent: "plum" as const,
   },
   {
-    quote:
-      "They photographed our wedding the way good poetry sounds — quiet at first, then suddenly inevitable. Six months later our parents still call asking which page their photo is on.",
-    name: "Riya & Karthik",
-    place: "Coorg, Karnataka",
-    date: "February 2024",
-    avatar: TESTIMONIAL_AVATARS[1],
+    avatar: "/images/portraits/woman-gold-crown.jpg",
     photo: "/images/wedding/couple-at-mandap.jpg",
     accent: "terracotta" as const,
   },
   {
-    quote:
-      "Indian weddings are loud. A S Photography is gentle. They moved through the chaos like they had a map only they could see. Every important moment is in our album, and every embarrassing one too.",
-    name: "Meera & Aditya",
-    place: "Udaipur, Rajasthan",
-    date: "November 2023",
-    avatar: TESTIMONIAL_AVATARS[2],
+    avatar: "/images/portraits/red-white-sari.jpg",
     photo: "/images/pre-wedding/window-light.jpg",
     accent: "jade" as const,
   },
   {
-    quote:
-      "Booked them for a sangeet only, ended up extending to all four days. Their candid eye is the real deal — no awkward poses, just real people on the best day of their lives.",
-    name: "Sneha & Rohan",
-    place: "Goa",
-    date: "January 2024",
-    avatar: TESTIMONIAL_AVATARS[3],
+    avatar: "/images/portraits/red-gold-bride.jpg",
     photo: "/images/pre-wedding/golden-hour.jpg",
     accent: "ruby" as const,
   },
@@ -109,6 +91,31 @@ const PRESS: PressItem[] = [
 const DURATION = 9000;
 
 export default function Testimonials() {
+  const site = useSite();
+  // Merge Sanity reviews with the visual slot defaults — reviews supply text,
+  // slots supply photo/avatar/accent. If Sanity has more or fewer reviews than
+  // slots, we cycle through slots to keep colours/photos consistent.
+  const VOICES = site.voices.reviews.length
+    ? site.voices.reviews.map((r, idx) => {
+        const slot = VOICE_SLOTS[idx % VOICE_SLOTS.length];
+        return {
+          quote: r.quote,
+          name: r.couple,
+          place: r.place,
+          date: r.date,
+          avatar: slot.avatar,
+          photo: slot.photo,
+          accent: (r.accent ?? slot.accent) as "plum" | "terracotta" | "jade" | "ruby",
+        };
+      })
+    : VOICE_SLOTS.map((slot) => ({
+        quote: "",
+        name: "",
+        place: "",
+        date: "",
+        ...slot,
+      }));
+
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -119,7 +126,7 @@ export default function Testimonials() {
       DURATION
     );
     return () => clearInterval(id);
-  }, [paused]);
+  }, [paused, VOICES.length]);
 
   const v = VOICES[i];
   const prevI = (i - 1 + VOICES.length) % VOICES.length;

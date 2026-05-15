@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Ruflo/Claude tooling — not part of the app.
+    ".claude/**",
+    ".claude-flow/**",
+    "drizzle/**",
   ]),
 ]);
 

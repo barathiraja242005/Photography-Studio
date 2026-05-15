@@ -31,6 +31,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Restrict which remote image hosts <Image> may proxy from.
   images: {
+    // Serve AVIF first (much smaller than JPEG/WebP), fall back to WebP.
+    formats: ["image/avif", "image/webp"],
+    // Cache transformed images at the edge for a year — they're immutable.
+    minimumCacheTTL: 31536000,
     remotePatterns: [
       {
         protocol: "https",
@@ -41,6 +45,18 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "plus.unsplash.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.r2.dev",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.r2.cloudflarestorage.com",
         port: "",
         pathname: "/**",
       },

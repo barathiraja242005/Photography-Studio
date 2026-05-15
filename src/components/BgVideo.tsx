@@ -45,7 +45,7 @@ export default function BgVideo({
       muted
       loop
       playsInline
-      preload="auto"
+      preload="metadata"
       poster={poster}
       className={cn("h-full w-full object-cover", className)}
     >

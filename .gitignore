@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local-only video originals (compressed copies are tracked; backups are not)
+/public/videos/.orig/
+
+# Ruflo / Claude tooling installed by `ruflo init` — workspace-local
+/.claude/
+/.claude-flow/
+/.swarm/
+/.mcp.json
+
+# Drizzle local artifacts
+/drizzle/

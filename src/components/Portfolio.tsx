@@ -4,10 +4,11 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, ArrowUpRight, Camera } from "lucide-react";
-import { GALLERY, type GalleryTag } from "@/lib/images";
+import { type GalleryTag } from "@/lib/images";
 import { cn } from "@/lib/cn";
 import { EASE } from "@/lib/motion";
 import { SectionLabel } from "@/components/Ornament";
+import { useSite } from "@/components/SiteContext";
 
 const TAGS: ("All" | GalleryTag)[] = [
   "All",
@@ -57,12 +58,14 @@ const SHAPES = [
 ];
 
 export default function Portfolio() {
+  const site = useSite();
+  const GALLERY = site.gallery;
   const [tag, setTag] = useState<(typeof TAGS)[number]>("All");
   const [active, setActive] = useState<number | null>(null);
 
   const items = useMemo(
     () => (tag === "All" ? GALLERY : GALLERY.filter((g) => g.tag === tag)),
-    [tag]
+    [tag, GALLERY]
   );
 
   const next = () =>
