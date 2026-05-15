@@ -60,24 +60,26 @@ export function Mandala({ className = "" }: { className?: string }) {
       <circle cx="100" cy="100" r="60" />
       <circle cx="100" cy="100" r="40" />
       <circle cx="100" cy="100" r="20" />
+      {/* Trig values rounded to 3 decimal places so server SSR and client
+          render emit identical strings (otherwise React hydration mismatches). */}
       {Array.from({ length: 16 }).map((_, i) => {
         const a = (i * Math.PI * 2) / 16;
-        const x1 = 100 + Math.cos(a) * 20;
-        const y1 = 100 + Math.sin(a) * 20;
-        const x2 = 100 + Math.cos(a) * 98;
-        const y2 = 100 + Math.sin(a) * 98;
+        const x1 = +(100 + Math.cos(a) * 20).toFixed(3);
+        const y1 = +(100 + Math.sin(a) * 20).toFixed(3);
+        const x2 = +(100 + Math.cos(a) * 98).toFixed(3);
+        const y2 = +(100 + Math.sin(a) * 98).toFixed(3);
         return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />;
       })}
       {Array.from({ length: 8 }).map((_, i) => {
         const a = (i * Math.PI * 2) / 8 + Math.PI / 16;
-        const cx = 100 + Math.cos(a) * 70;
-        const cy = 100 + Math.sin(a) * 70;
+        const cx = +(100 + Math.cos(a) * 70).toFixed(3);
+        const cy = +(100 + Math.sin(a) * 70).toFixed(3);
         return <circle key={`p-${i}`} cx={cx} cy={cy} r="8" />;
       })}
       {Array.from({ length: 12 }).map((_, i) => {
         const a = (i * Math.PI * 2) / 12;
-        const cx = 100 + Math.cos(a) * 50;
-        const cy = 100 + Math.sin(a) * 50;
+        const cx = +(100 + Math.cos(a) * 50).toFixed(3);
+        const cy = +(100 + Math.sin(a) * 50).toFixed(3);
         return <circle key={`s-${i}`} cx={cx} cy={cy} r="4" />;
       })}
     </svg>
