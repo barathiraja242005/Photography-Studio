@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
+import { Chatbot } from "./_components/Chatbot";
 
 export const metadata: Metadata = {
   title: "Admin · A S Photography",
@@ -67,6 +68,7 @@ export default async function AdminLayout({
       <main className="md:pl-60">
         <div className="mx-auto max-w-5xl px-6 py-10">{children}</div>
       </main>
+      <Chatbot />
     </div>
   );
 }
