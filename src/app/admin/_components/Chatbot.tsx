@@ -84,12 +84,17 @@ export function Chatbot() {
         {open ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
       </button>
 
-      {/* Panel */}
+      {/* Panel — full-width on mobile, pinned card on md+. data-lenis-prevent
+          opts this subtree out of the page-wide smooth-scroll hijack so the
+          internal messages list can be scrolled normally. */}
       {open && (
         <div
           role="dialog"
           aria-label="Admin assistant"
-          className="fixed bottom-20 right-5 z-30 flex h-[32rem] w-[22rem] flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-2xl md:bottom-24 md:right-6"
+          data-lenis-prevent
+          className="fixed z-30 flex flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-2xl
+                     bottom-20 left-4 right-4 max-h-[calc(100dvh-6rem)] h-[min(32rem,calc(100dvh-6rem))]
+                     md:left-auto md:bottom-24 md:right-6 md:w-[22rem] md:h-[32rem]"
         >
           <header className="flex items-center gap-2 border-b border-neutral-200 bg-neutral-50 px-4 py-3">
             <Sparkles className="h-4 w-4 text-neutral-700" />
@@ -109,7 +114,11 @@ export function Chatbot() {
             </button>
           </header>
 
-          <div ref={scroll} className="flex-1 space-y-3 overflow-y-auto px-4 py-3 text-sm">
+          <div
+            ref={scroll}
+            data-lenis-prevent
+            className="flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-3 text-sm"
+          >
             {messages.map((m, i) =>
               m.role === "user" ? (
                 <div key={i} className="flex justify-end">

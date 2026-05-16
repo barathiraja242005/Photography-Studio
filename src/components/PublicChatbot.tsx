@@ -54,13 +54,17 @@ export default function PublicChatbot() {
         {open ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
       </button>
 
-      {/* Panel */}
+      {/* Panel — full-width on mobile, pinned card on md+. data-lenis-prevent
+          tells the page-wide smooth-scroll lib to leave wheel/touch events
+          alone inside this element so the messages list actually scrolls. */}
       {open && (
         <div
           role="dialog"
           aria-label="Chat with the studio"
-          className="fixed bottom-22 right-5 z-40 flex h-[34rem] w-[22rem] flex-col overflow-hidden rounded-2xl border border-line bg-paper shadow-2xl md:bottom-24 md:right-6"
-          style={{ bottom: "5.5rem" }}
+          data-lenis-prevent
+          className="fixed z-40 flex flex-col overflow-hidden rounded-2xl border border-line bg-paper shadow-2xl
+                     bottom-24 left-4 right-4 max-h-[calc(100dvh-7rem)] h-[min(34rem,calc(100dvh-7rem))]
+                     md:left-auto md:right-6 md:w-[22rem] md:h-[34rem]"
         >
           <header className="flex items-center gap-3 border-b border-line bg-plum px-4 py-3 text-bg">
             <span className="font-display text-base tracking-tight">
@@ -82,7 +86,11 @@ export default function PublicChatbot() {
             </button>
           </header>
 
-          <div ref={scroll} className="flex-1 space-y-3 overflow-y-auto px-4 py-3 text-sm">
+          <div
+            ref={scroll}
+            data-lenis-prevent
+            className="flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-3 text-sm"
+          >
             {messages.map((m, i) =>
               m.role === "user" ? (
                 <div key={i} className="flex justify-end">
