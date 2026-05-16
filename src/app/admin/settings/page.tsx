@@ -1,17 +1,78 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ImagePicker } from "../_components/ImagePicker";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-// Lightweight settings editor: a few highlighted fields up top (most-edited),
-// plus a raw JSON pane below for full control over every nested section.
+import { StudioSection } from "./_sections/StudioSection";
+import { ContactSection } from "./_sections/ContactSection";
+import { SocialSection } from "./_sections/SocialSection";
+import { SeoSection } from "./_sections/SeoSection";
+import { NavSection } from "./_sections/NavSection";
+import { HeroSection } from "./_sections/HeroSection";
+import { AboutSection } from "./_sections/AboutSection";
+import { ServicesSection } from "./_sections/ServicesSection";
+import { PortfolioSection } from "./_sections/PortfolioSection";
+import { FilmsCopySection } from "./_sections/FilmsCopySection";
+import { PublicationsSection } from "./_sections/PublicationsSection";
+import { VoicesSection } from "./_sections/VoicesSection";
+import { CtaBannerSection } from "./_sections/CtaBannerSection";
+import { InstagramCopySection } from "./_sections/InstagramCopySection";
+import { ContactFormSection } from "./_sections/ContactFormSection";
+import { FooterSection } from "./_sections/FooterSection";
+import { MediaSection } from "./_sections/MediaSection";
+
+type SiteData = Record<string, unknown>;
+
+type SectionId =
+  | "studio"
+  | "contact"
+  | "social"
+  | "seo"
+  | "nav"
+  | "hero"
+  | "about"
+  | "services"
+  | "portfolio"
+  | "films-copy"
+  | "publications"
+  | "voices"
+  | "cta-banner"
+  | "instagram-copy"
+  | "contact-section"
+  | "footer"
+  | "media"
+  | "raw";
+
+const NAV: { id: SectionId; label: string; group: string }[] = [
+  { id: "studio", label: "Studio", group: "Identity" },
+  { id: "contact", label: "Contact", group: "Identity" },
+  { id: "social", label: "Social", group: "Identity" },
+  { id: "seo", label: "SEO", group: "Identity" },
+  { id: "nav", label: "Navigation", group: "Identity" },
+  { id: "hero", label: "Hero", group: "Sections" },
+  { id: "about", label: "About", group: "Sections" },
+  { id: "services", label: "Services", group: "Sections" },
+  { id: "portfolio", label: "Portfolio copy", group: "Sections" },
+  { id: "films-copy", label: "Films copy", group: "Sections" },
+  { id: "publications", label: "Publications", group: "Sections" },
+  { id: "voices", label: "Voices / press", group: "Sections" },
+  { id: "cta-banner", label: "CTA banner", group: "Sections" },
+  { id: "instagram-copy", label: "Instagram copy", group: "Sections" },
+  { id: "contact-section", label: "Contact form copy", group: "Sections" },
+  { id: "footer", label: "Footer", group: "Sections" },
+  { id: "media", label: "Featured media", group: "Media" },
+  { id: "raw", label: "Raw JSON (danger)", group: "Advanced" },
+];
+
 export default function SettingsAdmin() {
+  const [data, setData] = useState<SiteData>({});
+  const [initial, setInitial] = useState<SiteData>({});
   const [raw, setRaw] = useState<string>("");
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
-  const [savedMsg, setSavedMsg] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [savedMsg, setSavedMsg] = useState<string | null>(null);
+  const [active, setActive] = useState<SectionId>("studio");
+  const editingRaw = useRef(false);
 
   async function load() {
     setLoading(true);
@@ -23,8 +84,10 @@ export default function SettingsAdmin() {
         throw new Error(`API ${res.status}: ${text.slice(0, 240)}`);
       }
       const json = await res.json();
-      setData(json.data || {});
-      setRaw(JSON.stringify(json.data || {}, null, 2));
+      const d = (json.data ?? {}) as SiteData;
+      setData(d);
+      setInitial(d);
+      setRaw(JSON.stringify(d, null, 2));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load.");
     } finally {
@@ -37,63 +100,73 @@ export default function SettingsAdmin() {
     load();
   }, []);
 
-  function setPath(path: string[], value: unknown) {
-    setData((d) => {
-      const copy = structuredClone(d ?? {}) as Record<string, unknown>;
-      let cursor = copy as Record<string, unknown>;
-      for (let i = 0; i < path.length - 1; i++) {
-        if (typeof cursor[path[i]] !== "object" || cursor[path[i]] === null) {
-          cursor[path[i]] = {};
-        }
-        cursor = cursor[path[i]] as Record<string, unknown>;
-      }
-      cursor[path[path.length - 1]] = value;
-      setRaw(JSON.stringify(copy, null, 2));
-      return copy;
-    });
+  // Keep raw JSON view in sync with structured edits (but not while the user is editing the raw pane).
+  useEffect(() => {
+    if (!editingRaw.current) {
+      setRaw(JSON.stringify(data, null, 2));
+    }
+  }, [data]);
+
+  const dirty = useMemo(
+    () => JSON.stringify(data) !== JSON.stringify(initial),
+    [data, initial],
+  );
+
+  function setSection<K extends string>(key: K, next: unknown) {
+    setData((d) => ({ ...d, [key]: next }));
   }
 
-  function get(path: string[]): unknown {
-    let cursor: unknown = data;
-    for (const p of path) {
-      if (typeof cursor !== "object" || cursor === null) return undefined;
-      cursor = (cursor as Record<string, unknown>)[p];
-    }
-    return cursor;
+  function getSection<T>(key: string): T {
+    return (data[key] ?? {}) as T;
   }
 
   async function save() {
     setBusy(true);
     setError(null);
     setSavedMsg(null);
-    let body: unknown;
+    let body: unknown = data;
+    if (active === "raw") {
+      try {
+        body = JSON.parse(raw);
+      } catch (e) {
+        setError("JSON is invalid: " + (e instanceof Error ? e.message : "parse error"));
+        setBusy(false);
+        return;
+      }
+    }
     try {
-      body = JSON.parse(raw);
-    } catch (e) {
-      setError("JSON is invalid: " + (e instanceof Error ? e.message : "parse error"));
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json.error || "Save failed.");
+      } else {
+        setSavedMsg("Saved. Live site updates within ~60 seconds.");
+        setTimeout(() => setSavedMsg(null), 4000);
+        setData(body as SiteData);
+        setInitial(body as SiteData);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed.");
+    } finally {
       setBusy(false);
-      return;
     }
-    const res = await fetch("/api/admin/settings", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const json = await res.json();
-    if (!res.ok) {
-      setError(json.error || "Save failed.");
-    } else {
-      setSavedMsg("Saved. Live site will update within ~60 seconds.");
-      setTimeout(() => setSavedMsg(null), 4000);
-      // refresh local view
-      setData(body as Record<string, unknown>);
-    }
-    setBusy(false);
   }
 
-  if (loading) return <p className="text-sm text-neutral-500">Loading…</p>;
+  function revert() {
+    if (!confirm("Discard all unsaved changes?")) return;
+    setData(initial);
+    setRaw(JSON.stringify(initial, null, 2));
+  }
 
-  if (error && !data) {
+  if (loading) {
+    return <p className="text-sm text-neutral-500">Loading…</p>;
+  }
+
+  if (error && Object.keys(data).length === 0) {
     return (
       <div className="rounded border border-red-300 bg-red-50 p-4 text-sm text-red-700">
         <p className="font-medium">Failed to load settings</p>
@@ -103,133 +176,203 @@ export default function SettingsAdmin() {
     );
   }
 
+  const groups = Array.from(new Set(NAV.map((n) => n.group)));
+
   return (
-    <div className="space-y-8">
-      <header>
-        <h1 className="text-2xl font-semibold">Site Settings</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Edit the most-changed fields below, or scroll down to edit the full JSON.
-        </p>
-      </header>
+    <div className="flex min-h-[calc(100vh-8rem)] gap-6">
+      <aside className="sticky top-4 h-max w-56 shrink-0 space-y-4 self-start">
+        <header>
+          <h1 className="text-lg font-semibold">Site settings</h1>
+          <p className="mt-0.5 text-xs text-neutral-500">All editable content from the homepage.</p>
+        </header>
+        <nav className="space-y-4">
+          {groups.map((g) => (
+            <div key={g}>
+              <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+                {g}
+              </p>
+              <ul className="space-y-0.5">
+                {NAV.filter((n) => n.group === g).map((n) => (
+                  <li key={n.id}>
+                    <button
+                      type="button"
+                      onClick={() => setActive(n.id)}
+                      className={
+                        "w-full rounded px-2 py-1 text-left text-sm " +
+                        (active === n.id
+                          ? "bg-neutral-900 text-white"
+                          : "text-neutral-700 hover:bg-neutral-100")
+                      }
+                    >
+                      {n.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+      </aside>
 
-      <section className="space-y-6 rounded-lg border border-neutral-200 bg-white p-6">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-neutral-500">
-          Studio identity
-        </h2>
-        <Row label="Studio name" path={["studio", "name"]} get={get} set={setPath} />
-        <Row label="Tagline" path={["studio", "tagline"]} get={get} set={setPath} />
-        <Row label="Bio (footer)" path={["studio", "bio"]} get={get} set={setPath} textarea />
-
-        <h2 className="pt-4 text-sm font-medium uppercase tracking-wider text-neutral-500">
-          Contact
-        </h2>
-        <Row label="Phone (display)" path={["contact", "phoneDisplay"]} get={get} set={setPath} />
-        <Row label="Phone (tel: link)" path={["contact", "phoneTel"]} get={get} set={setPath} />
-        <Row label="Email" path={["contact", "email"]} get={get} set={setPath} />
-        <Row label="WhatsApp link" path={["contact", "whatsappLink"]} get={get} set={setPath} />
-
-        <h2 className="pt-4 text-sm font-medium uppercase tracking-wider text-neutral-500">
-          Hero
-        </h2>
-        <Row label="Eyebrow" path={["hero", "eyebrow"]} get={get} set={setPath} />
-        <Row label="Description" path={["hero", "description"]} get={get} set={setPath} textarea />
-        <Row label="Booking pill" path={["hero", "bookingPill"]} get={get} set={setPath} />
-
-        <h2 className="pt-4 text-sm font-medium uppercase tracking-wider text-neutral-500">
-          SEO
-        </h2>
-        <Row label="Page title" path={["seo", "title"]} get={get} set={setPath} />
-        <Row label="Meta description" path={["seo", "description"]} get={get} set={setPath} textarea />
-      </section>
-
-      <section className="space-y-6 rounded-lg border border-neutral-200 bg-white p-6">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-neutral-500">
-          Featured images & videos
-        </h2>
-        <ImagePicker
-          label="About background image"
-          value={(get(["about", "aboutImage"]) as string) || ""}
-          onChange={(url) => setPath(["about", "aboutImage"], url)}
-        />
-        <ImagePicker
-          label="CTA banner image"
-          value={(get(["ctaBanner", "ctaImage"]) as string) || ""}
-          onChange={(url) => setPath(["ctaBanner", "ctaImage"], url)}
-        />
-        <ImagePicker
-          label="Hero background video"
-          kind="video"
-          value={(get(["hero", "heroVideoSrc"]) as string) || ""}
-          onChange={(url) => setPath(["hero", "heroVideoSrc"], url)}
-        />
-      </section>
-
-      <section className="rounded-lg border border-neutral-200 bg-white p-6">
-        <details>
-          <summary className="cursor-pointer text-sm font-medium uppercase tracking-wider text-neutral-500">
-            Full JSON (every field)
-          </summary>
-          <p className="mt-3 text-xs text-neutral-500">
-            All fields from the original site.ts file are editable here. Be careful with brackets/commas — invalid JSON will fail to save.
-          </p>
-          <textarea
-            value={raw}
-            onChange={(e) => setRaw(e.target.value)}
-            rows={30}
-            className="mt-3 w-full rounded border border-neutral-300 p-3 font-mono text-xs"
-            spellCheck={false}
+      <div className="min-w-0 flex-1 space-y-6">
+        {active === "studio" && (
+          <StudioSection
+            data={getSection("studio")}
+            onChange={(v) => setSection("studio", v)}
           />
-        </details>
-      </section>
+        )}
+        {active === "contact" && (
+          <ContactSection
+            data={getSection("contact")}
+            onChange={(v) => setSection("contact", v)}
+          />
+        )}
+        {active === "social" && (
+          <SocialSection
+            data={getSection("social")}
+            onChange={(v) => setSection("social", v)}
+          />
+        )}
+        {active === "seo" && (
+          <SeoSection
+            data={getSection("seo")}
+            onChange={(v) => setSection("seo", v)}
+          />
+        )}
+        {active === "nav" && (
+          <NavSection
+            data={getSection("nav")}
+            onChange={(v) => setSection("nav", v)}
+          />
+        )}
+        {active === "hero" && (
+          <HeroSection
+            data={getSection("hero")}
+            onChange={(v) => setSection("hero", v)}
+          />
+        )}
+        {active === "about" && (
+          <AboutSection
+            data={getSection("about")}
+            onChange={(v) => setSection("about", v)}
+          />
+        )}
+        {active === "services" && (
+          <ServicesSection
+            data={getSection("services")}
+            onChange={(v) => setSection("services", v)}
+          />
+        )}
+        {active === "portfolio" && (
+          <PortfolioSection
+            data={getSection("portfolio")}
+            onChange={(v) => setSection("portfolio", v)}
+          />
+        )}
+        {active === "films-copy" && (
+          <FilmsCopySection
+            data={getSection("films")}
+            onChange={(v) => setSection("films", v)}
+          />
+        )}
+        {active === "publications" && (
+          <PublicationsSection
+            data={(data.publications as string[]) ?? []}
+            onChange={(v) => setSection("publications", v)}
+          />
+        )}
+        {active === "voices" && (
+          <VoicesSection
+            data={getSection("voices")}
+            onChange={(v) => setSection("voices", v)}
+          />
+        )}
+        {active === "cta-banner" && (
+          <CtaBannerSection
+            data={getSection("ctaBanner")}
+            onChange={(v) => setSection("ctaBanner", v)}
+          />
+        )}
+        {active === "instagram-copy" && (
+          <InstagramCopySection
+            data={getSection("instagram")}
+            onChange={(v) => setSection("instagram", v)}
+          />
+        )}
+        {active === "contact-section" && (
+          <ContactFormSection
+            data={getSection("contactSection")}
+            onChange={(v) => setSection("contactSection", v)}
+          />
+        )}
+        {active === "footer" && (
+          <FooterSection
+            data={getSection("footer")}
+            onChange={(v) => setSection("footer", v)}
+          />
+        )}
+        {active === "media" && (
+          <MediaSection
+            data={{
+              aboutImage: data.aboutImage as string | undefined,
+              ctaImage: data.ctaImage as string | undefined,
+              heroVideoSrc: data.heroVideoSrc as string | undefined,
+              heroImages: data.heroImages as string[] | undefined,
+              filmPoster: data.filmPoster as string | undefined,
+              filmVideoSrc: data.filmVideoSrc as string | undefined,
+            }}
+            onChange={(v) => setData((d) => ({ ...d, ...v }))}
+          />
+        )}
+        {active === "raw" && (
+          <section className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-6">
+            <header>
+              <h2 className="text-base font-semibold text-amber-900">Raw JSON</h2>
+              <p className="mt-0.5 text-xs text-amber-800">
+                Edit the entire settings document directly. Use only if a field is missing from the structured forms. Invalid JSON will fail to save.
+              </p>
+            </header>
+            <textarea
+              value={raw}
+              onFocus={() => (editingRaw.current = true)}
+              onBlur={() => (editingRaw.current = false)}
+              onChange={(e) => setRaw(e.target.value)}
+              rows={30}
+              spellCheck={false}
+              className="w-full rounded border border-amber-300 bg-white p-3 font-mono text-xs"
+            />
+            <p className="text-xs text-amber-800">
+              Press Save below — this view&apos;s contents will replace the entire settings document on save.
+            </p>
+          </section>
+        )}
 
-      <div className="sticky bottom-4 flex items-center justify-end gap-3 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
-        {error && <p className="mr-auto text-sm text-red-600">{error}</p>}
-        {savedMsg && <p className="mr-auto text-sm text-emerald-700">{savedMsg}</p>}
-        <button
-          onClick={save}
-          disabled={busy}
-          className="rounded bg-neutral-900 px-5 py-2 text-sm text-white hover:bg-neutral-800 disabled:opacity-50"
-        >
-          {busy ? "Saving…" : "Save"}
-        </button>
+        <div className="sticky bottom-4 z-10 flex items-center justify-end gap-3 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+          {error && <p className="mr-auto text-sm text-red-600">{error}</p>}
+          {savedMsg && <p className="mr-auto text-sm text-emerald-700">{savedMsg}</p>}
+          {!error && !savedMsg && (
+            <p className="mr-auto text-xs text-neutral-500">
+              {dirty ? "Unsaved changes" : "No changes"}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={revert}
+            disabled={busy || !dirty}
+            className="rounded border border-neutral-300 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 disabled:opacity-40"
+          >
+            Revert
+          </button>
+          <button
+            type="button"
+            onClick={save}
+            disabled={busy || (!dirty && active !== "raw")}
+            className="rounded bg-neutral-900 px-5 py-2 text-sm text-white hover:bg-neutral-800 disabled:opacity-50"
+          >
+            {busy ? "Saving…" : "Save"}
+          </button>
+        </div>
       </div>
     </div>
-  );
-}
-
-function Row({
-  label,
-  path,
-  get,
-  set,
-  textarea,
-}: {
-  label: string;
-  path: string[];
-  get: (p: string[]) => unknown;
-  set: (p: string[], v: unknown) => void;
-  textarea?: boolean;
-}) {
-  const value = (get(path) as string) ?? "";
-  return (
-    <label className="block">
-      <span className="mb-1 block text-xs uppercase tracking-wider text-neutral-500">
-        {label}
-      </span>
-      {textarea ? (
-        <textarea
-          value={value}
-          onChange={(e) => set(path, e.target.value)}
-          rows={3}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
-        />
-      ) : (
-        <input
-          value={value}
-          onChange={(e) => set(path, e.target.value)}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
-        />
-      )}
-    </label>
   );
 }
