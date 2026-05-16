@@ -176,6 +176,130 @@ function lower(s: string): string {
   return s.toLowerCase();
 }
 
+// ─── SEO suggester ───────────────────────────────────────────────
+
+const SEO_TITLE_IDEAL = { min: 50, max: 60, hardMax: 65 };
+const SEO_DESC_IDEAL = { min: 140, max: 160, hardMax: 165 };
+
+function titleStatus(len: number): { tag: string; sweet: boolean } {
+  if (len < 30) return { tag: `${len} chars — too short`, sweet: false };
+  if (len < SEO_TITLE_IDEAL.min) return { tag: `${len} chars — short, OK`, sweet: false };
+  if (len <= SEO_TITLE_IDEAL.max) return { tag: `${len} chars — ideal`, sweet: true };
+  if (len <= SEO_TITLE_IDEAL.hardMax) return { tag: `${len} chars — at the edge`, sweet: false };
+  return { tag: `${len} chars — Google will truncate`, sweet: false };
+}
+
+function descStatus(len: number): { tag: string; sweet: boolean } {
+  if (len < 100) return { tag: `${len} chars — too short, lose SERP real estate`, sweet: false };
+  if (len < SEO_DESC_IDEAL.min) return { tag: `${len} chars — short, OK`, sweet: false };
+  if (len <= SEO_DESC_IDEAL.max) return { tag: `${len} chars — ideal`, sweet: true };
+  if (len <= SEO_DESC_IDEAL.hardMax) return { tag: `${len} chars — at the edge`, sweet: false };
+  return { tag: `${len} chars — Google will truncate`, sweet: false };
+}
+
+const STYLE_KEYWORDS = ["candid", "editorial", "destination", "film", "luxury", "intimate", "cinematic"];
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+type SeoCtx = {
+  studio: string;
+  tagline: string;
+  primaryCity: string;
+  cities: string[];
+  established: string;
+  bio: string;
+};
+
+function readSeoCtx(site: SiteData | null): SeoCtx {
+  const studioObj = (site?.studio as Record<string, unknown>) ?? {};
+  const contactObj = (site?.contact as Record<string, unknown>) ?? {};
+  const cities = (contactObj.locations as string[] | undefined)?.filter((c) => typeof c === "string" && c.length > 0) ?? [];
+  const established = studioObj.established ? String(studioObj.established) : "";
+  return {
+    studio: (studioObj.name as string) || "A S Photography",
+    tagline: (studioObj.tagline as string) || "Wedding Photography",
+    primaryCity: cities[0] || "India",
+    cities,
+    established,
+    bio: (studioObj.bio as string) || "",
+  };
+}
+
+function detectCity(q: string, ctx: SeoCtx): string {
+  // 1. Match a city the studio lists.
+  const fromList = ctx.cities.find((c) => q.includes(c.toLowerCase()));
+  if (fromList) return fromList;
+  // 2. Match common Indian wedding destinations.
+  const common = ["udaipur", "jaipur", "goa", "delhi", "bengaluru", "mumbai", "chennai", "kolkata", "hyderabad", "coorg", "kerala", "rajasthan"];
+  const hit = common.find((c) => q.includes(c));
+  if (hit) return capitalize(hit);
+  return ctx.primaryCity;
+}
+
+function detectStyle(q: string): string | null {
+  return STYLE_KEYWORDS.find((k) => q.includes(k)) ?? null;
+}
+
+function seoTitleVariants(q: string, ctx: SeoCtx): string[] {
+  const city = detectCity(q, ctx);
+  const style = detectStyle(q);
+  const adj = style ? capitalize(style) : "Candid";
+  const yr = ctx.established ? ` · Since ${ctx.established}` : "";
+  const out = new Set<string>([
+    // Location-led: best for local search intent.
+    `Wedding Photographer in ${city} | ${ctx.studio}`,
+    // Style + location: strong long-tail.
+    `${adj} Wedding Photography in ${city} — ${ctx.studio}`,
+    // Brand-first with national reach.
+    `${ctx.studio} · ${adj} Indian Wedding Photography`,
+    // Social proof with year.
+    `Best Wedding Photographers in ${city}${yr} — ${ctx.studio}`,
+    // Destination angle — great for couples searching from elsewhere.
+    `Destination Wedding Photographers in India · ${ctx.studio}`,
+    // Tagline-led, brand-anchored.
+    `${ctx.studio} | ${ctx.tagline} in ${city}`,
+  ]);
+  return Array.from(out);
+}
+
+function seoDescriptionVariants(q: string, ctx: SeoCtx): string[] {
+  const city = detectCity(q, ctx);
+  const style = detectStyle(q) ?? "candid";
+  const since = ctx.established ? ` since ${ctx.established}` : "";
+  return [
+    `${capitalize(style)} wedding photography studio in ${city}. Indian weddings told slowly — haldi, mehndi, sangeet, baraat, and the vows. Available across India and worldwide.`,
+    `${ctx.studio} — ${style} wedding photographers in ${city}${since}. Pre-weddings, ceremonies, and editorial albums kept as heirloom. Enquire for a custom quote.`,
+    `Looking for a wedding photographer in ${city}? ${ctx.studio} captures candid, editorial Indian weddings — every ritual, every quiet moment. Booking 2026–2027.`,
+    `${ctx.studio} is a ${city}-based wedding photography studio working across India and abroad. Cinematic films, editorial albums, two photographers on every wedding.`,
+  ];
+}
+
+/**
+ * Tag the variant with the best-practice reason it works. Keeps each
+ * variant copy-pasteable while annotating why a particular form is good.
+ */
+function whyTitleWorks(idx: number): string {
+  return [
+    "Location-led — leads with the keyword Google uses for local searches.",
+    "Style + location — captures long-tail queries like 'candid wedding photographer Mumbai'.",
+    "Brand-first — best when you have direct/brand traffic and want recognition.",
+    "Social proof — 'Best' + year reinforces credibility (only use if it's actually true).",
+    "Destination angle — for couples in city A planning a wedding in city B.",
+    "Tagline-anchored — most personal; use when your tagline is a strong differentiator.",
+  ][idx] ?? "";
+}
+
+function whyDescWorks(idx: number): string {
+  return [
+    "Front-loads keywords + lists ceremony types — strong long-tail coverage.",
+    "Brand-led with credibility ('since X') + clear call-to-action.",
+    "Conversational ('Looking for…?') — matches voice-search intent.",
+    "Highlights deliverables (films, albums) and team — useful for service-page descriptions.",
+  ][idx] ?? "";
+}
+
 function includesAny(haystack: string, needles: string[]): boolean {
   return needles.some((n) => haystack.includes(n));
 }
@@ -213,6 +337,7 @@ const rules: Rule[] = [
         {
           kind: "bullets",
           items: [
+            "Suggesting SEO page titles + meta descriptions (try: 'suggest an SEO title for Goa')",
             "Looking up your services / packages / pricing line",
             "Listing valid gallery tags and field options",
             "Explaining any admin field (just ask 'what is X')",
@@ -223,7 +348,7 @@ const rules: Rule[] = [
           ],
         },
       ],
-      suggestions: ["What services do we offer?", "Gallery tags?", "Suggest alt text for wedding"],
+      suggestions: ["Suggest an SEO title", "What services do we offer?", "Gallery tags?"],
     }),
   },
 
@@ -463,6 +588,150 @@ const rules: Rule[] = [
     }),
   },
 
+  // SEO title suggester — generates 5–6 variants ranked by closeness to
+  // Google's ideal 50–60 char window, with the rationale for each.
+  {
+    id: "seo-title",
+    score: (q) => {
+      if (includesAny(q, ["seo title", "page title", "meta title", "browser title", "google title", "search title", "title tag", "<title>"])) return 7;
+      if (includesAny(q, ["suggest title", "title suggestion", "title for seo", "seo for"])) return 6;
+      if (/^seo\b/.test(q) && !q.includes("description")) return 4;
+      return 0;
+    },
+    handler: (q, ctx) => {
+      const sctx = readSeoCtx(ctx.site);
+      const variants = seoTitleVariants(q, sctx);
+      const detectedCity = detectCity(q, sctx);
+      const detectedStyle = detectStyle(q);
+      const ranked = variants
+        .map((t, originalIdx) => {
+          const len = t.length;
+          const status = titleStatus(len);
+          return { title: t, len, status, originalIdx };
+        })
+        // Sort: ideal-length first, then by closeness to 57 (midpoint of 50–60).
+        .sort((a, b) => {
+          if (a.status.sweet !== b.status.sweet) return a.status.sweet ? -1 : 1;
+          return Math.abs(57 - a.len) - Math.abs(57 - b.len);
+        });
+
+      const lead =
+        `Here are ${ranked.length} title variants ranked by how close they land in Google's 50–60 char sweet spot. ` +
+        `I targeted ${detectedCity}${detectedStyle ? ` and a "${detectedStyle}" angle` : ""}. ` +
+        `Click "Copy" by selecting + ⌘C from the code box.`;
+
+      const parts: BotPart[] = [{ kind: "text", text: lead }];
+
+      for (let i = 0; i < ranked.length; i++) {
+        const r = ranked[i];
+        const tickOrWarn = r.status.sweet ? "✓" : "·";
+        parts.push({
+          kind: "text",
+          text: `${i + 1}. ${tickOrWarn} ${r.status.tag} — ${whyTitleWorks(r.originalIdx)}`,
+        });
+        parts.push({ kind: "code", text: r.title });
+      }
+
+      parts.push({
+        kind: "text",
+        text:
+          "Best practice: keep the primary keyword (wedding photographer) in the first ~30 chars, mention your city, and end with your studio name. Avoid all-caps, emoji, and clickbait — Google penalises them.",
+      });
+      parts.push({
+        kind: "text",
+        text:
+          "Paste the chosen one into Settings → SEO → Page title, save, and re-share the URL in WhatsApp/Linkedin to bust their preview caches.",
+      });
+
+      const followups = ["Suggest a meta description", "Different city"];
+      if (!detectedStyle) followups.push("Try a destination angle");
+      followups.push("What is meta description?");
+
+      return { parts, suggestions: followups };
+    },
+  },
+
+  // Meta description suggester — sibling rule, same pattern.
+  {
+    id: "seo-description",
+    score: (q) => {
+      if (includesAny(q, ["meta description", "page description", "seo description", "search description", "google description"])) return 7;
+      if (includesAny(q, ["suggest description", "description for seo"])) return 6;
+      // "description for haldi" should go to the service blurb rule, so be
+      // careful not to over-claim.
+      return 0;
+    },
+    handler: (q, ctx) => {
+      const sctx = readSeoCtx(ctx.site);
+      const variants = seoDescriptionVariants(q, sctx);
+      const ranked = variants.map((d, originalIdx) => {
+        const len = d.length;
+        const status = descStatus(len);
+        return { desc: d, len, status, originalIdx };
+      }).sort((a, b) => {
+        if (a.status.sweet !== b.status.sweet) return a.status.sweet ? -1 : 1;
+        return Math.abs(150 - a.len) - Math.abs(150 - b.len);
+      });
+
+      const parts: BotPart[] = [
+        { kind: "text", text: `Meta description variants — target window is 140–160 characters. I targeted ${detectCity(q, sctx)}.` },
+      ];
+      for (let i = 0; i < ranked.length; i++) {
+        const r = ranked[i];
+        const tick = r.status.sweet ? "✓" : "·";
+        parts.push({ kind: "text", text: `${i + 1}. ${tick} ${r.status.tag} — ${whyDescWorks(r.originalIdx)}` });
+        parts.push({ kind: "code", text: r.desc });
+      }
+      parts.push({
+        kind: "text",
+        text: "Tip: meta descriptions don't directly affect ranking, but they affect click-through. Use active voice, name the city, and end with a soft CTA ('Enquire', 'Booking 2026').",
+      });
+      return {
+        parts,
+        suggestions: ["Suggest an SEO title", "What is SEO?", "Different city"],
+      };
+    },
+  },
+
+  // Quick "what is SEO" / "what is meta description" — short glossary entry.
+  {
+    id: "seo-glossary",
+    score: (q) => {
+      if (!/what (is|does|are) /.test(q)) return 0;
+      if (q.includes("seo")) return 5;
+      if (q.includes("meta description")) return 5;
+      if (q.includes("og title") || q.includes("open graph")) return 5;
+      return 0;
+    },
+    handler: (q) => {
+      if (q.includes("meta description")) {
+        return {
+          parts: [
+            { kind: "text", text: "The 1–2 sentence summary Google shows below your title in search results. 140–160 characters is the sweet spot." },
+            { kind: "text", text: "It doesn't directly affect ranking, but it heavily affects click-through. Use active voice, mention your city, end with a soft CTA." },
+          ],
+          suggestions: ["Suggest a meta description", "What is SEO title?"],
+        };
+      }
+      if (q.includes("og") || q.includes("open graph")) {
+        return {
+          parts: [
+            { kind: "text", text: "Open Graph title is what shows when your URL is pasted into WhatsApp / Instagram DM / LinkedIn / Twitter. Can be punchier and more branded than the SEO title." },
+            { kind: "text", text: "OG description is the matching 1-line preview below it. Aim for ~90–100 chars so it doesn't wrap in chat apps." },
+          ],
+          suggestions: ["Suggest an SEO title", "Suggest a meta description"],
+        };
+      }
+      return {
+        parts: [
+          { kind: "text", text: "SEO = Search Engine Optimisation — making your site rank higher and look more clickable in Google results." },
+          { kind: "text", text: "The big levers you control from this admin: page title, meta description, headings, alt text, internal links, image sizes, and load speed. I can suggest the first two — try 'suggest an SEO title' or 'suggest a meta description'." },
+        ],
+        suggestions: ["Suggest an SEO title", "Suggest a meta description"],
+      };
+    },
+  },
+
   // Fallback
   {
     id: "fallback",
@@ -493,9 +762,9 @@ export function answer(query: string, ctx: Ctx): BotResponse {
 }
 
 export const WELCOME_SUGGESTIONS = [
+  "Suggest an SEO title",
   "What services do we offer?",
   "Gallery tags?",
   "Suggest alt text for haldi",
-  "How do I add a photo?",
   "Help",
 ];
