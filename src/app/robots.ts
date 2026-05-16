@@ -13,7 +13,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         // Don't index API routes if/when added
-        disallow: ["/api/"],
+        disallow: ["/api/", "/admin", "/admin/"],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

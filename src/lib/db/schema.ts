@@ -84,11 +84,25 @@ export const films = sqliteTable("films", {
     .$defaultFn(() => new Date().toISOString()),
 });
 
+/**
+ * Login attempts — used to rate-limit /api/admin/login. Every attempt
+ * (success or failure) inserts a row keyed by client IP and timestamp.
+ * The login handler counts recent rows per IP and rejects above a
+ * threshold. Old rows are cleaned opportunistically inside the handler.
+ */
+export const loginAttempts = sqliteTable("login_attempts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ip: text("ip").notNull(),
+  success: integer("success", { mode: "boolean" }).notNull().default(false),
+  attemptedAt: integer("attempted_at").notNull().$defaultFn(() => Date.now()),
+});
+
 export type GalleryPhotoRow = typeof galleryPhotos.$inferSelect;
 export type InstagramPostRow = typeof instagramPosts.$inferSelect;
 export type TestimonialRow = typeof testimonials.$inferSelect;
 export type FilmRow = typeof films.$inferSelect;
 export type SiteSettingsRow = typeof siteSettings.$inferSelect;
+export type LoginAttemptRow = typeof loginAttempts.$inferSelect;
 
 // `real` is exported just to keep drizzle-kit happy if we add float columns later.
 void real;

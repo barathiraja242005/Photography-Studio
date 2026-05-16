@@ -149,7 +149,10 @@ export async function getSiteData(): Promise<SiteData> {
           : base.filmList,
     };
   } catch (err) {
-    console.warn("[db] getSiteData failed, using fallback:", err);
+    // Log message only, not the full Error chain — libsql causes contain
+    // host/transport details that don't belong in Vercel function logs.
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn("[db] getSiteData failed, using fallback:", message);
     return buildFallback();
   }
 }

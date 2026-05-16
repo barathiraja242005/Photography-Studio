@@ -11,6 +11,13 @@ import { createClient } from "@libsql/client";
  * one route fails and we don't know why.
  */
 async function handler() {
+  // Diagnostic endpoint discloses non-trivial infra metadata (DB host,
+  // JWT shape, table list). Disabled by default — set DIAG_ENABLED=1 on
+  // the deployment temporarily when debugging, then unset.
+  if (process.env.DIAG_ENABLED !== "1") {
+    return new NextResponse("Not found", { status: 404 });
+  }
+
   const rawUrl = process.env.TURSO_DATABASE_URL || "";
   const rawTok = process.env.TURSO_AUTH_TOKEN || "";
 

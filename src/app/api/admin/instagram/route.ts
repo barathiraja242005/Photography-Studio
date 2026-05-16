@@ -4,7 +4,7 @@ import { z } from "zod";
 import { withAdmin } from "@/lib/auth/guard";
 import { db, isDbConfigured } from "@/lib/db/client";
 import { instagramPosts } from "@/lib/db/schema";
-import { formatDbError } from "@/lib/db/format-error";
+import { safeDbError } from "@/lib/db/format-error";
 import { revalidateSiteData } from "@/lib/get-site-data";
 
 const Body = z.object({
@@ -31,7 +31,7 @@ async function getHandler() {
       .orderBy(asc(instagramPosts.sortOrder), asc(instagramPosts.id));
     return NextResponse.json({ items });
   } catch (err) {
-    return NextResponse.json({ error: formatDbError(err) }, { status: 500 });
+    return NextResponse.json({ error: safeDbError(err) }, { status: 500 });
   }
 }
 

@@ -18,8 +18,16 @@ export const sessionOptions: SessionOptions = {
   cookieOptions: {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 30, // 30 days
+    // "strict" — never send the cookie on cross-origin top-level nav.
+    // Admin UI is only ever reached by typing the URL or via in-app links,
+    // so we don't lose anything by tightening this.
+    sameSite: "strict",
+    maxAge: 60 * 60 * 24 * 7, // 7 days — short enough that a stolen cookie expires soon, long enough for a single workweek.
+    // Path stays "/" — the admin API routes are under /api/admin/*, which is
+    // NOT a child of /admin in cookie-path terms (path matching is purely
+    // prefix-based on the URL path). Scoping to /admin would break the API.
+    // httpOnly + secure + sameSite=strict + AEAD encryption make the "cookie
+    // echoed on public requests" exposure negligible.
     path: "/",
   },
 };

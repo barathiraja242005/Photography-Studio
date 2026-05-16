@@ -3,10 +3,25 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+/**
+ * Only accept ?next= values that are same-origin admin paths. Rejects
+ * protocol-relative URLs (//attacker.tld), backslash tricks (/\evil),
+ * and absolute http(s) URLs — all classic open-redirect payloads.
+ */
+function safeNext(raw: string | null): string {
+  if (!raw) return "/admin";
+  // Must start with a single slash, not "//" or "/\".
+  if (!/^\/[^/\\]/.test(raw)) return "/admin";
+  // Must stay inside /admin to prevent bouncing the just-logged-in admin
+  // off the admin surface into something unexpected.
+  if (!raw.startsWith("/admin")) return "/admin";
+  return raw;
+}
+
 function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
-  const next = search.get("next") || "/admin";
+  const next = safeNext(search.get("next"));
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
