@@ -5,6 +5,7 @@ import { getSession, isAuthConfigured } from "@/lib/auth/session";
 import { db, isDbConfigured } from "@/lib/db/client";
 import { loginAttempts } from "@/lib/db/schema";
 import { timingSafeEqual } from "node:crypto";
+import { audit } from "@/lib/audit";
 
 const Body = z.object({ password: z.string().min(1).max(500) });
 
@@ -105,6 +106,7 @@ export async function POST(req: Request) {
   }
 
   if (!ok) {
+    await audit("login.failure", "auth", ip);
     // Same delay regardless of error to slow brute-force timing.
     await new Promise((r) => setTimeout(r, 400));
     return NextResponse.json({ error: "Wrong password." }, { status: 401 });
@@ -115,5 +117,6 @@ export async function POST(req: Request) {
   session.loginAt = Date.now();
   await session.save();
 
+  await audit("login.success", "auth", ip);
   return NextResponse.json({ ok: true });
 }

@@ -1,36 +1,23 @@
 import { NextResponse } from "next/server";
-import { desc } from "drizzle-orm";
 import { withAdmin } from "@/lib/auth/guard";
-import { db, isDbConfigured } from "@/lib/db/client";
-import { siteSettings } from "@/lib/db/schema";
 import { safeDbError } from "@/lib/db/format-error";
 import { revalidateSiteData } from "@/lib/get-site-data";
-import { SettingsSchema } from "@/lib/db/settings-schema";
+import { readSettings, saveSettings } from "@/lib/services/settings";
+import { actorFromRequest } from "@/lib/audit";
 
 async function getHandler() {
-  if (!isDbConfigured || !db) {
-    return NextResponse.json(
-      { error: "Database not configured." },
-      { status: 503 },
-    );
-  }
   try {
-    const rows = await db
-      .select()
-      .from(siteSettings)
-      .orderBy(desc(siteSettings.id))
-      .limit(1);
-    const data = rows[0] ? JSON.parse(rows[0].data) : null;
-    return NextResponse.json({ data });
+    const result = await readSettings();
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
+    }
+    return NextResponse.json({ data: result.data, version: result.version });
   } catch (err) {
     return NextResponse.json({ error: safeDbError(err) }, { status: 500 });
   }
 }
 
 async function putHandler(req: Request) {
-  if (!isDbConfigured || !db) {
-    return NextResponse.json({ error: "Database not configured." }, { status: 503 });
-  }
   let body: unknown;
   try {
     body = await req.json();
@@ -38,37 +25,40 @@ async function putHandler(req: Request) {
     return NextResponse.json({ error: "Invalid JSON." }, { status: 400 });
   }
 
-  // Reject payloads that don't roughly match the SiteData shape. The
-  // schema is permissive (passthrough on every object) — the goal is to
-  // catch type confusion and oversized fields, not to enforce business
-  // rules.
-  const parsed = SettingsSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid settings payload.", issues: parsed.error.issues.slice(0, 5) },
-      { status: 400 },
-    );
+  // expectedVersion may come as a top-level field on the PUT body OR via
+  // the If-Match header. Both are supported so a future client lib can
+  // choose either pattern.
+  let expectedVersion: number | null = null;
+  if (typeof body === "object" && body !== null && "expectedVersion" in body) {
+    const v = (body as { expectedVersion?: unknown }).expectedVersion;
+    if (typeof v === "number") expectedVersion = v;
+    delete (body as Record<string, unknown>).expectedVersion;
+  }
+  if (expectedVersion === null) {
+    const ifMatch = req.headers.get("if-match");
+    if (ifMatch) {
+      const n = Number(ifMatch);
+      if (Number.isFinite(n)) expectedVersion = n;
+    }
   }
 
-  const json = JSON.stringify(parsed.data);
-  if (json.length > 200_000) {
-    return NextResponse.json({ error: "Payload too large." }, { status: 400 });
-  }
-
-  // Single-row table: wrap the delete+insert in a transaction so a crash
-  // between them can't leave us with zero settings rows. libsql supports
-  // immediate transactions via drizzle's transaction API.
   try {
-    await db.transaction(async (tx) => {
-      await tx.delete(siteSettings);
-      await tx.insert(siteSettings).values({ data: json });
+    const result = await saveSettings({
+      body,
+      expectedVersion,
+      actor: actorFromRequest(req),
     });
+    if (!result.ok) {
+      return NextResponse.json(
+        result.issues ? { error: result.error, issues: result.issues } : { error: result.error },
+        { status: result.status },
+      );
+    }
+    revalidateSiteData();
+    return NextResponse.json({ ok: true, version: result.version });
   } catch (err) {
     return NextResponse.json({ error: safeDbError(err) }, { status: 500 });
   }
-
-  revalidateSiteData();
-  return NextResponse.json({ ok: true });
 }
 
 export const GET = withAdmin(getHandler);

@@ -41,7 +41,9 @@ export async function uploadBlob({
     throw new Error("R2 is not configured — set R2_* env vars in .env.local.");
   }
   const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, "-");
-  const random = randomBytes(4).toString("hex");
+  // 8 bytes (64 bits) of entropy — birthday-collision floor at ~4 billion
+  // keys, vs. ~65K with the previous 4-byte prefix.
+  const random = randomBytes(8).toString("hex");
   const key = `${keyPrefix}${random}-${safeName}`;
   await r2.send(
     new PutObjectCommand({

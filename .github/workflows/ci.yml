@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Lint first — cheapest signal, fastest feedback on style/regressions.
+      - name: Lint
+        run: npm run lint
+
+      # Typecheck independently of `next build` so a pure type regression
+      # fails CI even if the build pipeline would have produced output.
+      - name: Typecheck
+        run: npm run typecheck
+
+      # Unit tests — security helpers, chatbot routing, schema validation.
+      - name: Test
+        run: npm test
+
+      # Full Next build to catch any route / RSC / Turbopack regression.
+      # No env vars needed at build time (DB-dependent code falls back
+      # to the static site config when env is absent).
+      - name: Build
+        run: npm run build
+        env:
+          # Drizzle config tries to read these at build time; empty values
+          # are fine — drizzle only actually connects when push/migrate
+          # commands are invoked, which CI doesn't do.
+          TURSO_DATABASE_URL: ""
+          TURSO_AUTH_TOKEN: ""

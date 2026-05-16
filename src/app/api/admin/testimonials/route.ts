@@ -6,6 +6,7 @@ import { db, isDbConfigured } from "@/lib/db/client";
 import { testimonials } from "@/lib/db/schema";
 import { safeDbError } from "@/lib/db/format-error";
 import { revalidateSiteData } from "@/lib/get-site-data";
+import { actorFromRequest, audit } from "@/lib/audit";
 
 const Body = z.object({
   quote: z.string().min(10).max(2000),
@@ -45,6 +46,7 @@ async function postHandler(req: Request) {
     .insert(testimonials)
     .values({ ...body.data, sortOrder })
     .returning();
+  await audit("testimonial.create", `testimonial#${inserted[0]?.id ?? "?"}`, actorFromRequest(req), { couple: body.data.couple });
   revalidateSiteData();
   return NextResponse.json({ item: inserted[0] });
 }

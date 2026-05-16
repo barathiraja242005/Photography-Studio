@@ -14,6 +14,11 @@
 
 import type { BotPart, Rule, SiteData } from "./chatbot-rules";
 import { capitalizeWord, includes } from "./chatbot-rules";
+import {
+  COMMON_CITIES,
+  detectCeremony as detectCeremonyShared,
+  detectStyle as detectStyleShared,
+} from "./chatbot-knowledge";
 
 // ─── SEO context ────────────────────────────────────────────────
 
@@ -36,8 +41,8 @@ function descStatus(len: number): { tag: string; sweet: boolean } {
   return { tag: `${len} chars — Google will truncate`, sweet: false };
 }
 
-const STYLE_KEYWORDS = ["candid", "editorial", "destination", "film", "luxury", "intimate", "cinematic"];
-const COMMON_CITIES = ["udaipur", "jaipur", "goa", "delhi", "bengaluru", "mumbai", "chennai", "kolkata", "hyderabad", "coorg", "kerala", "rajasthan"];
+// Local re-exports — STYLE_KEYWORDS + COMMON_CITIES + the detect* helpers
+// live in chatbot-knowledge.ts (single source of truth).
 
 type SeoCtx = {
   studio: string;
@@ -98,14 +103,8 @@ function detectCity(q: string, ctx: SeoCtx): string {
   return ctx.primaryCity;
 }
 
-function detectStyle(q: string): string | null {
-  return STYLE_KEYWORDS.find((k) => q.includes(k)) ?? null;
-}
-
-function detectCeremony(q: string): string | null {
-  const ceremonies = ["wedding", "haldi", "mehndi", "sangeet", "baraat", "pre-wedding", "maternity"];
-  return ceremonies.find((c) => q.includes(c)) ?? null;
-}
+const detectStyle = detectStyleShared;
+const detectCeremony = detectCeremonyShared;
 
 // ─── SEO title variants ──────────────────────────────────────────
 
@@ -612,8 +611,10 @@ export const suggesterRules: Rule[] = [
   {
     id: "ig-caption",
     score: (q) => {
-      if (includes(q, ["instagram caption", "ig caption", "caption for instagram", "post caption", "reel caption"])) return 7;
-      if (q.includes("caption for") && (detectCeremony(q) || false)) return 6;
+      if (includes(q, ["instagram caption", "ig caption", "caption for instagram", "post caption", "reel caption"])) return 8;
+      // Beat the alt-text rule (which also matches "caption for") when the
+      // user names a specific ceremony.
+      if (q.includes("caption for") && detectCeremony(q)) return 8;
       return 0;
     },
     handler: (q) => {

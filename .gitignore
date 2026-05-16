@@ -49,5 +49,6 @@ next-env.d.ts
 /.swarm/
 /.mcp.json
 
-# Drizzle local artifacts
-/drizzle/
+# drizzle/ migration files ARE committed — they are the schema history.
+# (Earlier this directory was gitignored; once we adopted db:generate
+# + db:migrate it became part of the source.)

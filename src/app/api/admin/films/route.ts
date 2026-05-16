@@ -6,6 +6,7 @@ import { db, isDbConfigured } from "@/lib/db/client";
 import { films } from "@/lib/db/schema";
 import { safeDbError } from "@/lib/db/format-error";
 import { revalidateSiteData } from "@/lib/get-site-data";
+import { actorFromRequest, audit } from "@/lib/audit";
 
 const Body = z.object({
   title: z.string().min(1).max(120),
@@ -46,6 +47,7 @@ async function postHandler(req: Request) {
     .insert(films)
     .values({ ...body.data, sortOrder })
     .returning();
+  await audit("film.create", `film#${inserted[0]?.id ?? "?"}`, actorFromRequest(req), { kind: body.data.kind });
   revalidateSiteData();
   return NextResponse.json({ item: inserted[0] });
 }

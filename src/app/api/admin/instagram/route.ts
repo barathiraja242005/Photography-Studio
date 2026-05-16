@@ -6,6 +6,7 @@ import { db, isDbConfigured } from "@/lib/db/client";
 import { instagramPosts } from "@/lib/db/schema";
 import { safeDbError } from "@/lib/db/format-error";
 import { revalidateSiteData } from "@/lib/get-site-data";
+import { actorFromRequest, audit } from "@/lib/audit";
 
 const Body = z.object({
   imageUrl: z.string().url(),
@@ -46,6 +47,7 @@ async function postHandler(req: Request) {
     .insert(instagramPosts)
     .values({ ...body.data, sortOrder })
     .returning();
+  await audit("instagram.create", `instagram#${inserted[0]?.id ?? "?"}`, actorFromRequest(req), { kind: body.data.kind });
   revalidateSiteData();
   return NextResponse.json({ item: inserted[0] });
 }

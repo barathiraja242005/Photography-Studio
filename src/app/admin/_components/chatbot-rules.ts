@@ -46,15 +46,7 @@ export function capitalizeWord(s: string): string {
 
 // ─── Helpers ────────────────────────────────────────────────────
 
-const GALLERY_TAGS = [
-  "Wedding",
-  "Pre-Wedding",
-  "Haldi",
-  "Mehndi",
-  "Sangeet",
-  "Baraat",
-  "Maternity",
-] as const;
+import { GALLERY_TAGS } from "./chatbot-knowledge";
 
 const FIELD_GLOSSARY: Record<string, string> = {
   eyebrow:

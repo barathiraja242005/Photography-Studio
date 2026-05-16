@@ -67,6 +67,7 @@ export default function SettingsAdmin() {
   const [data, setData] = useState<SiteData>({});
   const [initial, setInitial] = useState<SiteData>({});
   const [raw, setRaw] = useState<string>("");
+  const [version, setVersion] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +89,7 @@ export default function SettingsAdmin() {
       setData(d);
       setInitial(d);
       setRaw(JSON.stringify(d, null, 2));
+      setVersion(typeof json.version === "number" ? json.version : 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load.");
     } finally {
@@ -135,19 +137,31 @@ export default function SettingsAdmin() {
       }
     }
     try {
+      // Wrap the body so the server can read `expectedVersion` without it
+      // colliding with anything in the settings shape. Stripped server-side
+      // before the zod validation runs.
+      const payload = { ...(body as Record<string, unknown>), expectedVersion: version };
       const res = await fetch("/api/admin/settings", {
         method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
+        headers: { "content-type": "application/json", "if-match": String(version) },
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
       if (!res.ok) {
-        setError(json.error || "Save failed.");
+        if (res.status === 409) {
+          setError(
+            (json.error as string | undefined) ||
+              "Settings were modified elsewhere. Reload to see the latest version.",
+          );
+        } else {
+          setError(json.error || "Save failed.");
+        }
       } else {
         setSavedMsg("Saved. Live site updates within ~60 seconds.");
         setTimeout(() => setSavedMsg(null), 4000);
         setData(body as SiteData);
         setInitial(body as SiteData);
+        if (typeof json.version === "number") setVersion(json.version);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed.");

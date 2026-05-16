@@ -6,6 +6,7 @@ import { db, isDbConfigured } from "@/lib/db/client";
 import { films } from "@/lib/db/schema";
 import { revalidateSiteData } from "@/lib/get-site-data";
 import { deleteBlob } from "@/lib/blob/r2";
+import { actorFromRequest, audit } from "@/lib/audit";
 
 const Patch = z.object({
   title: z.string().min(1).max(120).optional(),
@@ -29,12 +30,13 @@ async function putHandler(
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.message }, { status: 400 });
   await db.update(films).set(parsed.data).where(eq(films.id, id));
+  await audit("film.update", `film#${id}`, actorFromRequest(req), { fields: Object.keys(parsed.data) });
   revalidateSiteData();
   return NextResponse.json({ ok: true });
 }
 
 async function deleteHandler(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   if (!isDbConfigured || !db)
@@ -47,6 +49,7 @@ async function deleteHandler(
     await deleteBlob(rows[0].videoUrl);
   }
   await db.delete(films).where(eq(films.id, id));
+  await audit("film.delete", `film#${id}`, actorFromRequest(req));
   revalidateSiteData();
   return NextResponse.json({ ok: true });
 }

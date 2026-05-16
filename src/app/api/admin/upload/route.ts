@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAdmin } from "@/lib/auth/guard";
 import { uploadBlob, isR2Configured } from "@/lib/blob/r2";
+import { actorFromRequest, audit } from "@/lib/audit";
 
 const MAX_BYTES = 80 * 1024 * 1024; // 80 MB hard cap (covers most short videos)
 
@@ -101,6 +102,11 @@ async function handler(req: Request) {
     contentType: detected.mime,
     filename: finalName,
     keyPrefix,
+  });
+
+  await audit("upload.create", `upload:${detected.mime}`, actorFromRequest(req), {
+    bytes: file.size,
+    url,
   });
 
   return NextResponse.json({ url });

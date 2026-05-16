@@ -5,6 +5,7 @@ import { withAdmin } from "@/lib/auth/guard";
 import { db, isDbConfigured } from "@/lib/db/client";
 import { testimonials } from "@/lib/db/schema";
 import { revalidateSiteData } from "@/lib/get-site-data";
+import { actorFromRequest, audit } from "@/lib/audit";
 
 const Patch = z.object({
   quote: z.string().min(10).max(2000).optional(),
@@ -27,12 +28,13 @@ async function putHandler(
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.message }, { status: 400 });
   await db.update(testimonials).set(parsed.data).where(eq(testimonials.id, id));
+  await audit("testimonial.update", `testimonial#${id}`, actorFromRequest(req), { fields: Object.keys(parsed.data) });
   revalidateSiteData();
   return NextResponse.json({ ok: true });
 }
 
 async function deleteHandler(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   if (!isDbConfigured || !db)
@@ -40,6 +42,7 @@ async function deleteHandler(
   const { id: idStr } = await params;
   const id = Number(idStr);
   await db.delete(testimonials).where(eq(testimonials.id, id));
+  await audit("testimonial.delete", `testimonial#${id}`, actorFromRequest(req));
   revalidateSiteData();
   return NextResponse.json({ ok: true });
 }

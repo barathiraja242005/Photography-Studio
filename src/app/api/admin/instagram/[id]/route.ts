@@ -6,6 +6,7 @@ import { db, isDbConfigured } from "@/lib/db/client";
 import { instagramPosts } from "@/lib/db/schema";
 import { revalidateSiteData } from "@/lib/get-site-data";
 import { deleteBlob } from "@/lib/blob/r2";
+import { actorFromRequest, audit } from "@/lib/audit";
 
 const Patch = z.object({
   imageUrl: z.string().url().optional(),
@@ -29,12 +30,13 @@ async function putHandler(
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.message }, { status: 400 });
   await db.update(instagramPosts).set(parsed.data).where(eq(instagramPosts.id, id));
+  await audit("instagram.update", `instagram#${id}`, actorFromRequest(req), { fields: Object.keys(parsed.data) });
   revalidateSiteData();
   return NextResponse.json({ ok: true });
 }
 
 async function deleteHandler(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   if (!isDbConfigured || !db)
@@ -47,6 +49,7 @@ async function deleteHandler(
     .where(eq(instagramPosts.id, id));
   if (rows[0]) await deleteBlob(rows[0].imageUrl);
   await db.delete(instagramPosts).where(eq(instagramPosts.id, id));
+  await audit("instagram.delete", `instagram#${id}`, actorFromRequest(req));
   revalidateSiteData();
   return NextResponse.json({ ok: true });
 }

@@ -6,6 +6,7 @@ import { db, isDbConfigured } from "@/lib/db/client";
 import { galleryPhotos } from "@/lib/db/schema";
 import { safeDbError } from "@/lib/db/format-error";
 import { revalidateSiteData } from "@/lib/get-site-data";
+import { actorFromRequest, audit } from "@/lib/audit";
 
 const Body = z.object({
   imageUrl: z.string().url(),
@@ -53,6 +54,9 @@ async function postHandler(req: Request) {
     .insert(galleryPhotos)
     .values({ ...body.data, sortOrder })
     .returning();
+  await audit("gallery.create", `gallery#${inserted[0]?.id ?? "?"}`, actorFromRequest(req), {
+    tag: body.data.tag,
+  });
   revalidateSiteData();
   return NextResponse.json({ item: inserted[0] });
 }
