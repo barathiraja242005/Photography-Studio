@@ -10,6 +10,7 @@ import CtaBanner from "@/components/CtaBanner";
 import Instagram from "@/components/Instagram";
 import Contact, { Footer } from "@/components/Contact";
 import { SiteProvider } from "@/components/SiteContext";
+import PublicChatbot from "@/components/PublicChatbot";
 import { getSiteData } from "@/lib/get-site-data";
 
 export const revalidate = 60;
@@ -32,6 +33,7 @@ export default async function Home() {
         <Contact />
       </main>
       <Footer />
+      <PublicChatbot />
     </SiteProvider>
   );
 }
